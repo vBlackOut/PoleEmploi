@@ -1,5 +1,6 @@
 # PoleEmploi
 Robots PoleEmploi Selenium Python
+[![Watch the video](http://img.youtube.com/vi/P6Oh2EFNClg/0.jpg)](https://www.youtube.com/watch?v=P6Oh2EFNClg)
 
 ![alt text](http://alloemploi.fr/img/logo-pole-emploi.png)
 
