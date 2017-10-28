@@ -25,6 +25,7 @@ Robots PoleEmploi Selenium Python
 # selenium ( sudo python3 -m pip install selenium )
 # Pillow   ( sudo python3 -m pip install Pillow )
 # pyvirtualdisplay ( sudo python3 -m pip install pyvirtualdisplay )
+# Firefox > 49.0
 ```
 
 ## For run
