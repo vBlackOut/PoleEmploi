@@ -1,6 +1,8 @@
 # PoleEmploi
 Robots PoleEmploi Selenium Python
 
+![alt text](http://alloemploi.fr/img/logo-pole-emploi.png)
+
 ## Requirement
 ```
 # selenium 
