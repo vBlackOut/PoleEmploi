@@ -161,6 +161,8 @@ class PoleEmplois():
             im.save('images/Downloads/cel_'+str(i)+'.png') # saves new cropped image
 
         dict_pass = {}
+        if os.path.isdir("images/Downloads") == False:
+            os.makedirs("images/Downloads")
         for a in range(0, 10):
             for i in range(0, 10):
                 check = check_images('images/Downloads/cel_'+ str(i) +'.png', 'images/Templates/'+str(a)+'.png')
