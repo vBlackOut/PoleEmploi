@@ -10,5 +10,6 @@ Robots PoleEmploi Selenium Python
 
 ## For run
 ```
+edit config_bot.py
 python3 main.py -p {your_profile} check 
 ```
