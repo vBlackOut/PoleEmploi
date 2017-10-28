@@ -16,7 +16,6 @@ import pickle
 import string
 import os
 from PIL import Image
-import pytesseract
 from config_bot import *
 import sys
 
