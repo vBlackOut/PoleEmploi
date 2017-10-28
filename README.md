@@ -3,6 +3,18 @@ Robots PoleEmploi Selenium Python
 
 ![alt text](http://alloemploi.fr/img/logo-pole-emploi.png)
 
+## Functionnality
+```
+- auto login
+- actualisation account
+```
+
+## Testing environnement
+```
+- the script as tested for linux ( fedora 25 64bits)
+```
+
+
 ## Requirement
 ```
 # Python 3.x
