@@ -86,6 +86,7 @@ def image_diff(i1, i2):
 
 def check_images(image1, image2):
     pourcent = image_diff(image1, image2)
+    #print(pourcent)
     if pourcent <= 0.19:
     	return True
     else:
@@ -163,9 +164,10 @@ class PoleEmplois():
         dict_pass = {}
         if os.path.isdir("images/Downloads") == False:
             os.makedirs("images/Downloads")
+
         for a in range(0, 10):
             for i in range(0, 10):
-                check = check_images('images/Downloads/cel_'+ str(i) +'.png', 'images/Templates/'+str(a)+'.png')
+                check = check_images('images/Downloads/cel_'+ str(i) +'.png', 'images/Templates/normal/'+str(a)+'.png')
                 if check == True:
                     #print("cel_"+str(i), " = "+str(a))
                     elem = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.XPATH, "//button[@id='"+"val_cel_"+str(i)+"']")))
@@ -173,6 +175,18 @@ class PoleEmplois():
                     break
                 if i > 9:
                     break
+
+        if sum(map(len, dict_pass.values())) < 9:
+            for a in range(0, 10):
+                for i in range(0, 10):
+                    check = check_images('images/Downloads/cel_'+ str(i) +'.png', 'images/Templates/1600x900/'+str(a)+'.png')
+                    if check == True:
+                        #print("cel_"+str(i), " = "+str(a))
+                        elem = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.XPATH, "//button[@id='"+"val_cel_"+str(i)+"']")))
+                        dict_pass[elem.get_attribute("class")] = a
+                        break
+                    if i > 9:
+                        break
 
         time.sleep(2)
         for attrib in liste:
@@ -312,3 +326,4 @@ class PoleEmplois():
 
 if __name__ == '__main__':
     navigateur = PoleEmplois(Profile[sys.argv[2]][0], Profile[sys.argv[2]][1], True)
+
