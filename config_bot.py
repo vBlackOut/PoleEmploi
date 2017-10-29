@@ -1,6 +1,7 @@
 Profile = {}
 Profile["your_profile"] = ["",         # identifiant
                            "",         # Mot de passe
+                           "",         # code postale
                            "Non",      # Etes-vous inscrit à une session de formation ou suivez-vous une formation
                            "Non",      # Avez-vous travaillé ?
                            "Non",      # Avez-vous été en stage ?
