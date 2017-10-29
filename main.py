@@ -175,18 +175,20 @@ class PoleEmplois():
                     break
                 if i > 9:
                     break
-
-        if sum(map(len, dict_pass.values())) < 9:
-            for a in range(0, 10):
-                for i in range(0, 10):
-                    check = check_images('images/Downloads/cel_'+ str(i) +'.png', 'images/Templates/1600x900/'+str(a)+'.png')
-                    if check == True:
-                        #print("cel_"+str(i), " = "+str(a))
-                        elem = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.XPATH, "//button[@id='"+"val_cel_"+str(i)+"']")))
-                        dict_pass[elem.get_attribute("class")] = a
-                        break
-                    if i > 9:
-                        break
+        try:
+            if sum(map(len, dict_pass.values())) < 9:
+                for a in range(0, 10):
+                    for i in range(0, 10):
+                        check = check_images('images/Downloads/cel_'+ str(i) +'.png', 'images/Templates/1600x900/'+str(a)+'.png')
+                        if check == True:
+                            #print("cel_"+str(i), " = "+str(a))
+                            elem = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.XPATH, "//button[@id='"+"val_cel_"+str(i)+"']")))
+                            dict_pass[elem.get_attribute("class")] = a
+                            break
+                        if i > 9:
+                            break
+        except:
+            pass
 
         time.sleep(2)
         for attrib in liste:
