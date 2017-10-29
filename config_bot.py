@@ -1,3 +1,4 @@
+Profile = {}
 Profile["your_profile"] = ["",         # identifiant
                            "",         # Mot de passe
                            "Non",      # Etes-vous inscrit à une session de formation ou suivez-vous une formation
