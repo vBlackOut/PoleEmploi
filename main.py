@@ -196,7 +196,7 @@ class PoleEmplois():
             navigateur, 5).until(
             EC.presence_of_element_located(
                 (By.ID, "codepostal")))
-        inputPostal.send_keys("78300")
+        inputPostal.send_keys(Profile[sys.argv[2]][2])
         inputPostal.send_keys(Keys.RETURN)
 
 
