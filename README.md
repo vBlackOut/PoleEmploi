@@ -11,6 +11,7 @@ Robots PoleEmploi Selenium Python
 ```
 - auto login
 - actualisation account
+- get cv information
 ```
 
 ## Testing environnement
@@ -31,5 +32,9 @@ Robots PoleEmploi Selenium Python
 ## For run
 ```
 # edit config_bot.py
-python3 main.py -p your_profile check 
+python3 main.py -p your_profile check
+
+# check information cv number visitors/proposale appointment 
+python3 main.py -p your_profile cv
 ```
+
