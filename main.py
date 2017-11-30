@@ -85,7 +85,10 @@ class PoleEmplois():
             self.cv(self.navigateur)
 
         if sys.argv[3] == "check":
-            self.actualisation(self.navigateur)
+            actualisationcheck = self.actualisation(self.navigateur)
+            if actualisationcheck == False:
+            	print("Vous êtes déja actualisez... ou le bouton n'est pas mis en avant.")
+
 
         print()
         print("Back End: %s ms" % backendPerformance)
@@ -96,15 +99,16 @@ class PoleEmplois():
         print()
 
         try:
-            if sys.argv[4] != "noclose":
+            if sys.argv[4] != "noclose" and len(sys.argv) == 4:
                 print("close normal")
                 self.close(self.navigateur)
             elif sys.argv[3] != "noclose" and len(sys.argv) == 3:
                 print("close normal")
                 self.close(self.navigateur)
         except IndexError:
-            print("close normal")
-            self.close(self.navigateur)
+            pass
+            #print("close normal")
+            #self.close(self.navigateur)
 
 
     def Afficheur(self, display):
@@ -253,18 +257,19 @@ class PoleEmplois():
 
     def actualisation(self, navigateur):
         try:
+            try:
+                check_actualisation = WebDriverWait(navigateur, 3).until(EC.presence_of_element_located((By.XPATH, "//div[@class='parallel-unit']/div/p[2]")))
+                if "Vous avez déjà déclaré votre situation pour cette période" in check_actualisation.get_attribute("innerHTML"):
+                    print("Vous êtes déjà actualiser.")
+                    return False
+            except:
+                return False
+
             for elem in WebDriverWait(navigateur, 8).until(EC.presence_of_all_elements_located((By.XPATH, "//span/a"))):
                 if elem.get_attribute("innerHTML") == "Je m'actualise ?":
                     print("click on '" + elem.get_attribute("innerHTML")+"' ")
                     elem.click()
                     break
-            try:
-                check_actualisation = WebDriverWait(navigateur, 8).until(EC.presence_of_element_located((By.XPATH, "//div[@class='parallel-unit']/div/p[2]")))
-                if "Vous avez déjà déclaré votre situation pour cette période" in check_actualisation.get_attribute("innerHTML"):
-                    print("Vous êtes déjà actualiser.")
-                    return False
-            except:
-                pass
 
             # Etes-vous inscrit à une session de formation ou suivez-vous une formation ? 
             formationOui = WebDriverWait(navigateur, 8).until(EC.presence_of_element_located((By.XPATH, "//label[@for='formationOui']/strong")))
