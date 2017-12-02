@@ -56,9 +56,9 @@ def check_images(image1, image2):
     pourcent = image_diff(image1, image2)
     #print(pourcent)
     if pourcent <= 0.19:
-    	return True
+        return True
     else:
-    	return False
+        return False
 
 class PoleEmplois():
 
@@ -87,7 +87,7 @@ class PoleEmplois():
         if sys.argv[3] == "check":
             actualisationcheck = self.actualisation(self.navigateur)
             if actualisationcheck == False:
-            	print("Vous êtes déja actualisez... ou le bouton n'est pas mis en avant.")
+                print("Vous êtes déja actualisez... ou le bouton n'est pas mis en avant.")
 
 
         print()
@@ -236,20 +236,30 @@ class PoleEmplois():
 
     def cv(self, navigateur):
         print()
+
         for elem in WebDriverWait(navigateur, 8).until(EC.presence_of_all_elements_located((By.XPATH, "//h2[@class='category-title']/a"))):
             if elem.get_attribute("innerHTML") == "Mes candidatures,<br> CV et propositions":
                 print("click on '" + elem.get_attribute("innerHTML")+"' ")
                 elem.click()
                 break
+
         for elem in WebDriverWait(navigateur, 8).until(EC.presence_of_all_elements_located((By.XPATH, "//h2[@class='category-title']/a"))):
             if elem.get_attribute("innerHTML") == "Mes <br>CV":
                 print("click on '" + elem.get_attribute("innerHTML")+"' ")
                 elem.click()
                 break
+
+
         for i, elem in enumerate(WebDriverWait(navigateur, 8).until(EC.presence_of_all_elements_located((By.XPATH, "//h2[@class='block-title']/a")))):
             print()
             cvspan = WebDriverWait(navigateur, 8).until(EC.presence_of_all_elements_located((By.XPATH, "//h2[@class='block-title']/span[@class='date-refresh ng-scope']")))
             print(elem.get_attribute("innerHTML") + " ( " + self.cleanhtml(cvspan[i].get_attribute("outerHTML")).strip() + "(s) ) ")
+            
+            try:
+               cvsupdate = WebDriverWait(navigateur, 8).until(EC.presence_of_all_elements_located((By.XPATH, "//div[@class='hd']/span[@class='flag-unit']/span[@class='flag-txt ng-binding']")))
+               print("\033[0;33m > " +cvsupdate[i].get_attribute("innerHTML")+ " < \033[0m")
+            except:
+               pass
 
             cvspan = WebDriverWait(navigateur, 8).until(EC.presence_of_all_elements_located((By.XPATH, "//div[@class='primary']/div[@class='parallel-unit']/span[@class='value ng-binding']")))
             print(" > " + cvspan[i].get_attribute("innerHTML"))
