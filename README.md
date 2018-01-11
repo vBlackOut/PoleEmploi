@@ -38,7 +38,7 @@ python3 main.py -p your_profile check
 python3 main.py -p your_profile cv
 ```
 
-# for fedora 27-beta use sudo
+## for fedora 27-beta use sudo
 ```
 sudo python3 main.py -p your_profile [check|cv]
 ```
