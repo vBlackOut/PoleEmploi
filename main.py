@@ -7,7 +7,7 @@ from pyvirtualdisplay import Display
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException, StaleElementReferenceException
 
 # Dependancy for other element
 import urllib
@@ -89,6 +89,7 @@ class PoleEmplois():
         frontendPerformance = domComplete - responseStart
 
         start_time_login = time.time()
+        
         self.InputLogin(self.navigateur, compte, password)
         interval_login = time.time() - start_time_login
         print("\033[92m" + 'Total time login in seconds:', str(interval_login) + "\033[0m")
@@ -156,12 +157,30 @@ class PoleEmplois():
     def InputLogin(self, navigateur, account, password):
 
         # input ID
-        inputEmail = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.ID, "identifiant")))
-        print(bcolors.OKBLUE + "Enter ID with input" + bcolors.ENDC)
-        inputEmail.send_keys(account)
-        #button = navigateur.find_element_by_id("boutonContinuer")
-        button = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.ID, "submit")))
-        button.click()
+        try:
+            inputEmail = WebDriverWait(navigateur, 2).until(EC.presence_of_element_located((By.ID, "identifiant")))
+            print(bcolors.OKBLUE + "Enter ID with input" + bcolors.ENDC)
+            inputEmail.send_keys(account)
+            #button = navigateur.find_element_by_id("boutonContinuer")
+            button = WebDriverWait(navigateur, 2).until(EC.presence_of_element_located((By.ID, "submit")))
+            button.click()
+        except TimeoutException:
+            for i in range(0, 3):
+                try:
+                    print("try for login.... (" + str(i)+")")
+                    print(bcolors.FAIL + "Timeout check element recheck..." + bcolors.ENDC)
+                    inputEmail = WebDriverWait(navigateur, 5).until(EC.presence_of_element_located((By.XPATH, "//input[@id='identifiant']")))
+                    print(bcolors.OKBLUE + "Enter ID with input" + bcolors.ENDC)
+                    inputEmail.click()
+                    inputEmail.send_keys(account)
+                    #button = navigateur.find_element_by_id("boutonContinuer")
+                    button = WebDriverWait(navigateur, 5).until(EC.presence_of_element_located((By.ID, "submit")))
+                    if button and inputEmail:
+                        button.click()
+                        break
+                except TimeoutException:
+                    pass
+                    
         time.sleep(0.3)
         start_time_login = time.time()
         cel_0 = WebDriverWait(navigateur, 5).until(EC.presence_of_element_located((By.ID, "val_cel_0")))
