@@ -100,7 +100,7 @@ class PoleEmplois():
            if sys.argv[3] == "check":
                 actualisationcheck = self.actualisation(self.navigateur)
                 if actualisationcheck == False:
-                    print("Vous êtes déja actualisez... ou le bouton n'est pas mis en avant.")
+                    print(bcolors.FAIL + "Vous êtes déja actualisez... ou le bouton n'est pas mis en avant." + bcolors.ENDC)
         except IndexError:
         	pass
 
@@ -162,7 +162,7 @@ class PoleEmplois():
         #button = navigateur.find_element_by_id("boutonContinuer")
         button = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.ID, "submit")))
         button.click()
-        time.sleep(0.01)
+        time.sleep(0.3)
         start_time_login = time.time()
         cel_0 = WebDriverWait(navigateur, 5).until(EC.presence_of_element_located((By.ID, "val_cel_0")))
         cel_9 = WebDriverWait(navigateur, 5).until(EC.presence_of_element_located((By.ID, "val_cel_9")))
@@ -289,13 +289,12 @@ class PoleEmplois():
             try:
                 check_actualisation = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.XPATH, "//div[@class='feature-unit row-2 u-feature span-3']/div[2]/div[2]/p")))
                 if "Vous avez déjà déclaré votre situation pour cette période" in check_actualisation.get_attribute("innerHTML"):
-                    print("Vous êtes déjà actualiser.")
+                    print(bcolors.FAIL + "Vous êtes déjà actualiser." + bcolors.ENDC)
                     return False
             except:
                 return False
 
             for elem in WebDriverWait(navigateur, 8).until(EC.presence_of_all_elements_located((By.XPATH, "//span/a"))):
-                print(elem.get_attribute("innerHTML"))
                 if elem.get_attribute("innerHTML") == "Je m'actualise ?":
                     print("click on '" + elem.get_attribute("innerHTML")+"' ")
                     elem.click()
