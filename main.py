@@ -21,6 +21,20 @@ import sys
 import re
 import concurrent.futures
 
+
+
+
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
+
 # Cookie saver
 def save_cookies(driver, file_path):
     LINE = "{domain} False {path} {secure} {expiry} {name} {value}\n"
@@ -64,7 +78,7 @@ class PoleEmplois():
 
     def __init__(self, compte, password, display):
         start_time = time.time()
-        #self.display = self.Afficheur(display) 
+        self.display = self.Afficheur(display) 
         self.navigateur = self.Connection(compte)
 
         navigationStart = self.navigateur.execute_script("return window.performance.timing.navigationStart")
@@ -77,25 +91,26 @@ class PoleEmplois():
         start_time_login = time.time()
         self.InputLogin(self.navigateur, compte, password)
         interval_login = time.time() - start_time_login
-        print('Total time login in seconds:',interval_login)
+        print("\033[92m" + 'Total time login in seconds:', str(interval_login) + "\033[0m")
 
+        try:
+           if sys.argv[3] == "cv":
+                self.cv(self.navigateur)
 
-        
-        if sys.argv[3] == "cv":
-            self.cv(self.navigateur)
-
-        if sys.argv[3] == "check":
-            actualisationcheck = self.actualisation(self.navigateur)
-            if actualisationcheck == False:
-                print("Vous êtes déja actualisez... ou le bouton n'est pas mis en avant.")
+           if sys.argv[3] == "check":
+                actualisationcheck = self.actualisation(self.navigateur)
+                if actualisationcheck == False:
+                    print("Vous êtes déja actualisez... ou le bouton n'est pas mis en avant.")
+        except IndexError:
+        	pass
 
 
         print()
-        print("Back End: %s ms" % backendPerformance)
-        print("Front End: %s ms" % frontendPerformance)
+        print("\033[95m \033[1mBack End: %s ms \033[0m" % backendPerformance)
+        print("\033[95m \033[1mFront End: %s ms \033[0m" % frontendPerformance)
 
         interval = time.time() - start_time
-        print('Total time in seconds:',interval)
+        print('\033[95m \033[1mTotal time in seconds:',str(interval) + "\033[0m")
         print()
 
         try:
@@ -121,6 +136,7 @@ class PoleEmplois():
 
 
     def Connection(self, account):
+        print(bcolors.OKGREEN + "Connection au Pole Emploi" + bcolors.ENDC)
 
         url = "https://candidat.pole-emploi.fr/candidat/espacepersonnel/authentification/"
         profile = webdriver.FirefoxProfile()
@@ -138,17 +154,19 @@ class PoleEmplois():
         return navigateur
 
     def InputLogin(self, navigateur, account, password):
+
         # input ID
-        inputEmail = WebDriverWait(navigateur, 5).until(EC.presence_of_element_located((By.ID, "identifiant")))
+        inputEmail = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.ID, "identifiant")))
+        print(bcolors.OKBLUE + "Enter ID with input" + bcolors.ENDC)
         inputEmail.send_keys(account)
         #button = navigateur.find_element_by_id("boutonContinuer")
-        button = WebDriverWait(navigateur, 5).until(EC.presence_of_element_located((By.ID, "submit")))
+        button = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.ID, "submit")))
         button.click()
-
+        time.sleep(0.01)
         start_time_login = time.time()
-        cel_0 = WebDriverWait(navigateur, 2).until(EC.presence_of_element_located((By.ID, "val_cel_0")))
-        cel_9 = WebDriverWait(navigateur, 2).until(EC.presence_of_element_located((By.ID, "val_cel_9")))
-        time.sleep(0.1)
+        cel_0 = WebDriverWait(navigateur, 5).until(EC.presence_of_element_located((By.ID, "val_cel_0")))
+        cel_9 = WebDriverWait(navigateur, 5).until(EC.presence_of_element_located((By.ID, "val_cel_9")))
+
         if cel_0 and cel_9:
             navigateur.save_screenshot('images/screenshot.png')
             liste = list(password)
@@ -174,6 +192,7 @@ class PoleEmplois():
         # prepare list for password dual loop [(0,0), (0, 1), ... (0, 9), (1, 0), (1, 1), ...]
         listes = [(x, y) for x in range(0, 10) for y in range(0, 10)]
         
+        print(bcolors.OKBLUE + "Analysing Pad ... please wait" + bcolors.ENDC)
         with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
             for a, i in listes:
                 lineexec = executor.submit(check_images, 'images/Downloads/cel_'+ str(i) +'.png', 'images/Templates/normal/'+str(a)+'.png')
@@ -206,10 +225,10 @@ class PoleEmplois():
 
         navigateur.execute_script("document.getElementById(\"idTouchesCliques\").value=\""+ callback_string +"\";")
         elem = WebDriverWait(navigateur, 0.01).until(EC.presence_of_element_located((By.XPATH, "//input[@id='idTouchesCliques']")))
-        #print(callback_string)
+        print(bcolors.OKBLUE + "resolved pad touch '" + callback_string + "'"+ bcolors.ENDC)
         
         interval_login = time.time() - start_time_login
-        print('resolve pad time in seconds:',interval_login)
+        print( bcolors.UNDERLINE + bcolors.BOLD + bcolors.OKBLUE + 'resolve pad time in seconds:',str(interval_login) + bcolors.ENDC)
         
         #inputPostal = navigateur.find_element_by_id("champTexteCodePostal")
         inputPostal = WebDriverWait(
@@ -239,13 +258,13 @@ class PoleEmplois():
 
         for elem in WebDriverWait(navigateur, 8).until(EC.presence_of_all_elements_located((By.XPATH, "//h2[@class='category-title']/a"))):
             if elem.get_attribute("innerHTML") == "Mes candidatures,<br> CV et propositions":
-                print("click on '" + elem.get_attribute("innerHTML")+"' ")
+                print(bcolors.OKGREEN + "click on '" + elem.get_attribute("innerHTML")+"'" + bcolors.ENDC)
                 elem.click()
                 break
 
         for elem in WebDriverWait(navigateur, 8).until(EC.presence_of_all_elements_located((By.XPATH, "//h2[@class='category-title']/a"))):
             if elem.get_attribute("innerHTML") == "Mes <br>CV":
-                print("click on '" + elem.get_attribute("innerHTML")+"' ")
+                print(bcolors.OKGREEN + "click on '" + elem.get_attribute("innerHTML")+"'"+ bcolors.ENDC)
                 elem.click()
                 break
 
@@ -253,11 +272,11 @@ class PoleEmplois():
         for i, elem in enumerate(WebDriverWait(navigateur, 8).until(EC.presence_of_all_elements_located((By.XPATH, "//h2[@class='block-title']/a")))):
             print()
             cvspan = WebDriverWait(navigateur, 8).until(EC.presence_of_all_elements_located((By.XPATH, "//h2[@class='block-title']/span[@class='date-refresh ng-scope']")))
-            print(elem.get_attribute("innerHTML") + " ( " + self.cleanhtml(cvspan[i].get_attribute("outerHTML")).strip() + "(s) ) ")
+            print(bcolors.OKBLUE + elem.get_attribute("innerHTML") + " ( " + self.cleanhtml(cvspan[i].get_attribute("outerHTML")).strip() + "(s) ) "+ bcolors.ENDC)
             
             try:
                cvsupdate = WebDriverWait(navigateur, 8).until(EC.presence_of_all_elements_located((By.XPATH, "//div[@class='hd']/span[@class='flag-unit']/span[@class='flag-txt ng-binding']")))
-               print("\033[0;33m > " +cvsupdate[i].get_attribute("innerHTML")+ " < \033[0m")
+               print("\033[0;33m" + bcolors.UNDERLINE + bcolors.BOLD +" > " +cvsupdate[i].get_attribute("innerHTML")+ " < \033[0m")
             except:
                pass
 
