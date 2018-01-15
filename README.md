@@ -18,7 +18,7 @@ Robots PoleEmploi Selenium Python
 
 ## Testing environnement
 ```
-- the script as tested for linux ( fedora 25 64bits)
+- the script as tested for linux ( fedora 25/26/27 64bits)
 ```
 
 
