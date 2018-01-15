@@ -13,6 +13,7 @@ Robots PoleEmploi Selenium Python
 - auto login
 - actualisation account
 - get cv information
+- search post recrute
 ```
 
 ## Testing environnement
