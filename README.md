@@ -47,7 +47,7 @@ python3 main.py -p your_profile search
 
 ## for fedora use selinux [sudo requirement]
 ```
-sudo python3 main.py -p your_profile [check|cv]
+sudo python3 main.py -p your_profile [check|cv|search]
 ```
 
 
