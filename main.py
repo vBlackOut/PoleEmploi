@@ -7,7 +7,7 @@ from pyvirtualdisplay import Display
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import NoSuchElementException, TimeoutException, StaleElementReferenceException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException, StaleElementReferenceException, ElementNotInteractableException
 
 # Dependancy for other element
 import urllib
@@ -20,7 +20,7 @@ from config_bot import *
 import sys
 import re
 import concurrent.futures
-
+from bs4 import BeautifulSoup
 
 
 
@@ -28,6 +28,7 @@ class bcolors:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
     OKGREEN = '\033[92m'
+    WARNYELLOW = '\033[1;33m'
     WARNING = '\033[93m'
     FAIL = '\033[91m'
     ENDC = '\033[0m'
@@ -102,8 +103,29 @@ class PoleEmplois():
                 actualisationcheck = self.actualisation(self.navigateur)
                 if actualisationcheck == False:
                     print(bcolors.FAIL + "Vous êtes déja actualisez... ou le bouton n'est pas mis en avant." + bcolors.ENDC)
-        except IndexError:
-        	pass
+           if sys.argv[3] == "search":
+                search = self.search(self.navigateur)
+
+        except (IndexError, TimeoutException):
+            try:
+                for i in range(0, 9):
+                    if sys.argv[3] == "cv":
+                        cv = self.cv(self.navigateur)
+                        if cv:
+                            break
+
+                    if sys.argv[3] == "check":
+                        actualisationcheck = self.actualisation(self.navigateur)
+                        if actualisationcheck == False:
+                            print(bcolors.FAIL + "Vous êtes déja actualisez... ou le bouton n'est pas mis en avant." + bcolors.ENDC)
+                            break
+                
+                    if sys.argv[3] == "search":
+                        search = self.search(self.navigateur)
+                        if search:
+                            break
+            except TimeoutException:
+                pass
 
 
         print()
@@ -122,9 +144,9 @@ class PoleEmplois():
                 print("close normal")
                 self.close(self.navigateur)
         except IndexError:
-            pass
-            #print("close normal")
-            #self.close(self.navigateur)
+            #pass
+            print("close normal")
+            self.close(self.navigateur)
 
 
     def Afficheur(self, display):
@@ -272,6 +294,244 @@ class PoleEmplois():
         cleantext = re.sub('(rafraîchir ce CV)', '', raw_html)
         return cleantext
 
+    def cleanhtmls(self, raw_html):
+        raw_html = raw_html.replace('<br>', ' ')
+        raw_html = re.sub('<[^<]+?>', '', raw_html)
+        raw_html = re.sub('&nbsp;', ' ', raw_html)
+        raw_html = re.sub('&amp;', '&', raw_html)
+        raw_html = raw_html.replace('\t', ' ')
+        raw_html = raw_html.replace('\n', ' ')
+        return raw_html
+
+    def search_result(self, navigateur, ids, back, page_start, page_stop, row):
+        ids = ids-(row*10)
+        elem = WebDriverWait(navigateur, 1).until(EC.presence_of_element_located((By.XPATH, "//ul[@id='page_"+page_start+"-"+page_stop+"']/li[@class='result']["+str(ids+1)+"]/div[@id='"+str(ids)+"']/div[@class='media-body']/h2/a")))
+        elem.click()
+
+        time.sleep(1)
+        for i, elem in enumerate(WebDriverWait(navigateur, 8).until(EC.presence_of_all_elements_located((By.XPATH, "//div[@id='detailOffreVolet']")))):
+             soup = BeautifulSoup(elem.get_attribute("innerHTML"), 'lxml') # Parse the HTML as a string
+             print()
+             print(bcolors.WARNYELLOW + self.cleanhtmls(str(soup.find_all("h2", class_="t2 title")[0])) + bcolors.ENDC)
+             print(bcolors.OKGREEN + self.cleanhtmls(str(soup.find_all("p", class_="t4 title-complementary")[0])) + bcolors.ENDC)
+             print(bcolors.OKGREEN + self.cleanhtmls(str(soup.find_all("p", class_="t5 title-complementary")[0])) + bcolors.ENDC)
+             print()
+             print(bcolors.OKBLUE + self.cleanhtmls(str(soup.find_all("div", class_="description col-sm-8 col-md-7")[0])) + bcolors.ENDC)
+             print()
+             for i in soup.find_all("dd"):
+                print(bcolors.OKBLUE + self.cleanhtmls(str(i)) + bcolors.ENDC)
+             print()
+             print(bcolors.WARNYELLOW + "Profil souhaité" + bcolors.ENDC)
+             print()
+             for a, i in enumerate(soup.find_all("ul", class_="skill-list list-unstyled")):
+                if a == 0:
+                    print(bcolors.OKBLUE + "[Expérience]" + bcolors.ENDC)
+                    print(bcolors.OKGREEN + self.cleanhtmls(str(i)) + bcolors.ENDC)
+                if a == 1:
+                    print(bcolors.OKBLUE + "[Compétences]" + bcolors.ENDC)
+                    c = i.find_all("span", class_="skill-name")
+                    d = i.find_all("span", class_="skill-required")
+                    c.append("")
+                    d.append("")
+                    for x, y in zip(c, d):
+                        if x and y:
+                           print(self.cleanhtmls(str(x)) +" - " + bcolors.WARNING + self.cleanhtmls(str(y)) + bcolors.ENDC)
+                        else:
+                           print(self.cleanhtmls(str(x)))
+                    
+                if a == 2:
+                    print(bcolors.OKBLUE + "[Formation]" + bcolors.ENDC)
+                    c = i.find_all("span", class_="skill-name")
+                    d = i.find_all("span", class_="skill-required")
+                    c.append("")
+                    d.append("")
+                    for x, y in zip(c, d):
+                        if x and y:
+                           print(self.cleanhtmls(str(x)) +" - " + bcolors.WARNING + self.cleanhtmls(str(y)) + bcolors.ENDC)
+                        else:
+                           print(self.cleanhtmls(str(x)))
+                print()
+
+
+        while 1:
+
+            select = input(" [p] pour postuler \n [x] pour quitter \n Séléctionner l'action qui vous intéresse: ")
+
+            """try:
+                elem = WebDriverWait(navigateur, 5).until(EC.presence_of_element_located((By.XPATH, "//span[@class='close glaze-exclude']")))
+                elem.click()
+            except TimeoutException:
+                continue"""
+
+            if select == "p":
+                pass
+
+            if select == "x" or select == "X":
+                navigateur.get(back)
+                break
+                return False
+
+        return True
+
+
+    def search(self, navigateur):
+        for elem in WebDriverWait(navigateur, 8).until(EC.presence_of_all_elements_located((By.XPATH, "//h2[@class='category-title']/a"))):
+            if elem.get_attribute("innerHTML") == "Ma recherche <br>d'offres":
+                print(bcolors.OKGREEN + "click on '" + elem.get_attribute("innerHTML")+"'" + bcolors.ENDC)
+                elem.click()
+                break
+
+        for elem in WebDriverWait(navigateur, 8).until(EC.presence_of_all_elements_located((By.XPATH, "//h2[@class='category-title']/a"))):
+            if elem.get_attribute("innerHTML") == "La recherche<br>d'offres":
+                print(bcolors.OKGREEN + "click on '" + elem.get_attribute("innerHTML")+"'" + bcolors.ENDC)
+                elem.click()
+                break
+
+
+        navigateur.execute_script("document.getElementById(\"idoffresPartenaires\").checked = false;")
+        search_input = input("Séléctionner votre recherche: ")
+        inputs = WebDriverWait(navigateur, 5).until(EC.presence_of_element_located((By.XPATH, "//input[@id='idmotsCles-selectized']")))
+        inputs.send_keys(search_input)
+        time.sleep(0.05)
+
+        valide = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.XPATH, "//div[@class='selectize-dropdown-content']/div")))
+        valide.click()
+        
+        position_input = input("Séléctionner votre lieux de recherche: ")
+        inputs = WebDriverWait(navigateur, 5).until(EC.presence_of_element_located((By.XPATH, "//input[@id='idlieux-selectized']")))
+        inputs.click()
+
+        for i in range(0, len(position_input)):
+            time.sleep(0.01)
+            inputs.send_keys(position_input[i])
+
+        try:
+            valide = WebDriverWait(navigateur, 3).until(EC.presence_of_element_located((By.XPATH, "//div[@class='selectize-dropdown-content'][1]/div[2]")))
+            valide.click()
+        except (TimeoutException, ElementNotInteractableException):
+            try:
+                for i in range(0, 500):
+                    time.sleep(0.1)
+                    valide = WebDriverWait(navigateur, 5).until(EC.presence_of_element_located((By.XPATH, "//div[@class='selectize-dropdown-content'][1]/div[1]/div[@class='option active']")))
+                    if valide:
+                        print(bcolors.OKBLUE + "séléction automatique '" + self.cleanhtmls(valide.get_attribute("innerHTML")) +"'" + bcolors.ENDC)
+                        valide.click()
+                        break
+            except (TimeoutException, ElementNotInteractableException):
+                pass
+        
+        button = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.XPATH, "//a[@id='btnSubmitRechercheForm']")))
+        print(bcolors.OKBLUE + "click on '"+self.cleanhtmls(button.get_attribute("innerHTML")) +"'" + bcolors.ENDC)
+        button.click()
+
+
+        print(""" RESULT SEARCH """)
+        for i, elem in enumerate(WebDriverWait(navigateur, 8).until(EC.presence_of_all_elements_located((By.XPATH, "//div[@class='media-body']")))):
+            soup = BeautifulSoup(elem.get_attribute("innerHTML"), 'lxml') # Parse the HTML as a string
+            print(str(i) +" " + bcolors.WARNYELLOW + self.cleanhtmls(str(soup.find_all("h2")[0])).strip() + bcolors.ENDC)
+            for a in range(0, len(soup.find_all("p"))):
+                if a == 0:
+                    print(bcolors.OKGREEN + self.cleanhtmls(str(soup.find_all("p")[0])) +  bcolors.ENDC + "\n" + bcolors.OKBLUE + self.cleanhtmls(str(soup.find_all("p")[1])) + bcolors.ENDC)
+                if a == 1:
+                    print(bcolors.OKGREEN + self.cleanhtmls(str(soup.find_all("p")[2])) +  bcolors.ENDC + "\n" + bcolors.OKBLUE + self.cleanhtmls(str(soup.find_all("p")[3])) + bcolors.ENDC)
+
+            print()
+            #print(self.cleanhtmls(str(soup.find_all("h2")[0])).strip() + bcolors.ENDC)
+        
+        row = 0
+        urls = []
+        while 1:
+            if row == 0:
+                start = 0
+                end = 9
+                start_row = 10
+                end_row = 19
+
+            select = input(" ["+ str(start) + "-" + str(end) +"] ou pour plus de recherche [+] \n [s] pour revoir la liste des offres \n [x] pour quitter \n Séléctionner l'offre qui vous intéresse: ")
+            try:
+                if re.search('\d+', select):
+                    if int(select) >= start and int(select) <= end:
+                        urls.append(navigateur.current_url)
+                        try:
+                            button = WebDriverWait(navigateur, 1).until(EC.presence_of_element_located((By.XPATH, "//button[@class='eupopup-closebutton btn-reset']")))
+                            button.click()
+                            print(bcolors.OKBLUE + "close automatical 'fancy box'" +  bcolors.ENDC)
+                        except (TimeoutException, ElementNotInteractableException):
+                            pass
+                        try:
+                            result = self.search_result(navigateur, int(select), urls[0], str(start), str(end), row)
+                        except (TimeoutException, ElementNotInteractableException):
+                            for i in range(0, 3):
+                                #print("trying... resolve search")
+                                try:
+                                    result = self.search_result(navigateur, int(select), urls[0], str(start), str(end), row)
+                                except (TimeoutException, ElementNotInteractableException):
+                                    navigateur.get(navigateur.current_url)
+                                    time.sleep(0.5)
+
+                                    for i in range(0, row):
+                                        time.sleep(0.3)
+                                        plus = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.XPATH, "//p[@id='zoneAfficherPlus']/a")))
+                                        plus.click()
+
+                                    result = self.search_result(navigateur, int(select), urls[0], str(start), str(end), row)
+                                if result == False or result:
+                                    break
+
+
+
+            except ValueError:
+                pass
+
+            if isinstance(select, str) and select == "x" or select == "X":
+                break
+
+            if isinstance(select, str) and select == "s" or select == "S":
+                for i, elem in enumerate(WebDriverWait(navigateur, 8).until(EC.presence_of_all_elements_located((By.XPATH, "//ul[@id='page_"+str(start)+"-"+str(end)+"']/li[@class='result']/div/div[@class='media-body']")))):
+                    soup = BeautifulSoup(elem.get_attribute("innerHTML"), 'lxml') # Parse the HTML as a string
+                    print(str(start+i) +" " + bcolors.WARNYELLOW + self.cleanhtmls(str(soup.find_all("h2")[0])).strip() + bcolors.ENDC)
+                    for a in range(0, len(soup.find_all("p"))):
+                        if a == 0:
+                            print(bcolors.OKGREEN + self.cleanhtmls(str(soup.find_all("p")[0])) +  bcolors.ENDC + "\n" + bcolors.OKBLUE + self.cleanhtmls(str(soup.find_all("p")[1])) + bcolors.ENDC)
+                        if a == 1:
+                            print(bcolors.OKGREEN + self.cleanhtmls(str(soup.find_all("p")[2])) +  bcolors.ENDC + "\n" + bcolors.OKBLUE + self.cleanhtmls(str(soup.find_all("p")[3])) + bcolors.ENDC)
+                    print()
+                
+
+            if isinstance(select, str) and select == "+":
+                try:
+                    button = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.XPATH, "//button[@class='eupopup-closebutton btn-reset']")))
+                    button.click()
+                    print(bcolors.OKBLUE + "close automatical 'fancy box'" +  bcolors.ENDC)
+                except (TimeoutException, ElementNotInteractableException):
+                    pass
+
+                plus = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.XPATH, "//p[@id='zoneAfficherPlus']/a")))
+                plus.click()
+            
+
+                print(""" RESULT SEARCH """)
+                start = end+1
+                end = start+9
+                start_row = end_row+1
+                end_row = start_row+9
+
+                time.sleep(0.1)
+                for i, elem in enumerate(WebDriverWait(navigateur, 8).until(EC.presence_of_all_elements_located((By.XPATH, "//ul[@id='page_"+str(start)+"-"+str(end)+"']/li[@class='result']/div/div[@class='media-body']")))):
+                    soup = BeautifulSoup(elem.get_attribute("innerHTML"), 'lxml') # Parse the HTML as a string
+                    print(str(start+i) +" " + bcolors.WARNYELLOW + self.cleanhtmls(str(soup.find_all("h2")[0])).strip() + bcolors.ENDC)
+                    for a in range(0, len(soup.find_all("p"))):
+                        if a == 0:
+                            print(bcolors.OKGREEN + self.cleanhtmls(str(soup.find_all("p")[0])) +  bcolors.ENDC + "\n" + bcolors.OKBLUE + self.cleanhtmls(str(soup.find_all("p")[1])) + bcolors.ENDC)
+                        if a == 1:
+                            print(bcolors.OKGREEN + self.cleanhtmls(str(soup.find_all("p")[2])) +  bcolors.ENDC + "\n" + bcolors.OKBLUE + self.cleanhtmls(str(soup.find_all("p")[3])) + bcolors.ENDC)
+                    print()
+                row = row + 1
+
+                print()
+
+        return True
+
     def cv(self, navigateur):
         print()
 
@@ -417,4 +677,4 @@ class PoleEmplois():
         exit()
 
 if __name__ == '__main__':
-    navigateur = PoleEmplois(Profile[sys.argv[2]][0], Profile[sys.argv[2]][1], True)
+    navigateur = PoleEmplois(Profile[sys.argv[2]][0], Profile[sys.argv[2]][1], False)
