@@ -40,6 +40,9 @@ python3 main.py -p your_profile check
 
 # check information cv number visitors/proposale appointment 
 python3 main.py -p your_profile cv
+
+# launch search work 
+python3 main.py -p your_profile search
 ```
 
 ## for fedora use selinux [sudo requirement]
