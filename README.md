@@ -25,6 +25,8 @@ Robots PoleEmploi Selenium Python
 # Python 3.x
 # selenium ( sudo python3 -m pip install selenium )
 # Pillow   ( sudo python3 -m pip install Pillow )
+# BeautifullSoup ( sudo python3 -m pip install beautifullsoup )
+# lxml ( sudo python3 -m pip install lxml ) 
 # pyvirtualdisplay ( sudo python3 -m pip install pyvirtualdisplay )
 # Firefox > 49.0
 ```
