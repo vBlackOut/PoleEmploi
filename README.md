@@ -41,7 +41,7 @@ python3 main.py -p your_profile check
 # check information cv number visitors/proposale appointment 
 python3 main.py -p your_profile cv
 
-# launch search work 
+# launch search job's
 python3 main.py -p your_profile search
 ```
 
