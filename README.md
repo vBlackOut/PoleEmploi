@@ -14,6 +14,7 @@ Robots PoleEmploi Selenium Python
 - actualisation account
 - get cv information
 - search post recrute
+- send cv for offer jobs
 ```
 
 ## Testing environnement
