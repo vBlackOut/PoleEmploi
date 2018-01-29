@@ -61,7 +61,7 @@ class Utils():
                 button.click()
                 return True
             except TimeoutException:
-                for i in range(0, "retry"):
+                for i in range(0, kwargs["retry"]):
                     try:
                         print("try for element... (" + str(i)+")")
                         print(bcolors.FAIL + kwargs["message_fail"] + bcolors.ENDC)
