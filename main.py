@@ -9,6 +9,9 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, TimeoutException, StaleElementReferenceException, ElementNotInteractableException
 
+# other element
+from utils import *
+
 # Dependancy for other element
 import urllib
 import time
@@ -41,9 +44,7 @@ def save_cookies(driver, file_path):
     LINE = "{domain} False {path} {secure} {expiry} {name} {value}\n"
     with open(file_path, 'w') as file:
         for cookie in driver.get_cookies():
-            file.write(
-                LINE.format(
-                    **cookie))
+            file.write(LINE.format(**cookie))
 
 
 def load_cookies(driver, file_path):
@@ -88,10 +89,14 @@ class PoleEmplois():
 
         backendPerformance = responseStart - navigationStart
         frontendPerformance = domComplete - responseStart
+        self.ut = Utils()
 
         start_time_login = time.time()
         
-        self.InputLogin(self.navigateur, compte, password)
+        login = self.InputLogin(self.navigateur, compte, password)
+        if login == False:
+        	self.InputLogin(self.navigateur, compte, password, True)
+
         interval_login = time.time() - start_time_login
         print("\033[92m" + 'Total time login in seconds:', str(interval_login) + "\033[0m")
         time.sleep(0.3)
@@ -124,7 +129,7 @@ class PoleEmplois():
                     if sys.argv[3] == "search":
                     	while 1:
                            search = self.search(self.navigateur)
-            except TimeoutException:
+            except (TimeoutException, IndexError):
                 pass
 
 
@@ -144,9 +149,9 @@ class PoleEmplois():
                 print("close normal")
                 self.close(self.navigateur)
         except IndexError:
-            #pass
-            print("close normal")
-            self.close(self.navigateur)
+            pass
+            #print("close normal")
+            #self.close(self.navigateur)
 
 
     def Afficheur(self, display):
@@ -176,37 +181,31 @@ class PoleEmplois():
 
         return navigateur
 
-    def InputLogin(self, navigateur, account, password):
+    def InputLogin(self, navigateur, account, password, resend=False):
+        if resend:
+        	url = "https://candidat.pole-emploi.fr/candidat/espacepersonnel/authentification/"
+        	navigateur.get(url)
 
         # input ID
-        try:
-            inputEmail = WebDriverWait(navigateur, 2).until(EC.presence_of_element_located((By.ID, "identifiant")))
-            print(bcolors.OKBLUE + "Enter ID with input" + bcolors.ENDC)
-            inputEmail.send_keys(account)
-            #button = navigateur.find_element_by_id("boutonContinuer")
-            button = WebDriverWait(navigateur, 2).until(EC.presence_of_element_located((By.ID, "submit")))
-            button.click()
-        except TimeoutException:
-            for i in range(0, 3):
-                try:
-                    print("try for login.... (" + str(i)+")")
-                    print(bcolors.FAIL + "Timeout check element recheck..." + bcolors.ENDC)
-                    inputEmail = WebDriverWait(navigateur, 5).until(EC.presence_of_element_located((By.XPATH, "//input[@id='identifiant']")))
-                    print(bcolors.OKBLUE + "Enter ID with input" + bcolors.ENDC)
-                    inputEmail.click()
-                    inputEmail.send_keys(account)
-                    #button = navigateur.find_element_by_id("boutonContinuer")
-                    button = WebDriverWait(navigateur, 5).until(EC.presence_of_element_located((By.ID, "submit")))
-                    if button and inputEmail:
-                        button.click()
-                        break
-                except TimeoutException:
-                    pass
-                    
+        self.ut.retry(navigateur,
+                      method=By.XPATH, 
+                      element="//input[@id='identifiant']", 
+                      objects="input", 
+                      send_keys=account, 
+                      method_input=By.ID, 
+                      element_input="submit", 
+                      message="Enter ID with input", 
+                      message_fail="Timeout check element recheck...",
+                      timeout=3,
+                      timeout_fail=10)
+
         time.sleep(0.3)
         start_time_login = time.time()
-        cel_0 = WebDriverWait(navigateur, 5).until(EC.presence_of_element_located((By.ID, "val_cel_0")))
-        cel_9 = WebDriverWait(navigateur, 5).until(EC.presence_of_element_located((By.ID, "val_cel_9")))
+        try:
+            cel_0 = self.ut.retry(navigateur, method=By.ID, element="val_cel_0", objects="single_element", timeout=5)
+            cel_9 = self.ut.retry(navigateur, method=By.ID, element="val_cel_9", objects="single_element", timeout=5)
+        except TimeoutException:
+        	return  False
 
         if cel_0 and cel_9:
             navigateur.save_screenshot('images/screenshot.png')
@@ -215,7 +214,7 @@ class PoleEmplois():
             exit()
 
         for i in range(0,10):
-            cel_0 = WebDriverWait(navigateur, 0.01).until(EC.presence_of_element_located((By.ID, "val_cel_"+str(i))))
+            cel_0 = self.ut.retry(navigateur, method=By.ID, element="val_cel_"+str(i), objects="single_element", timeout=0.01)
             location = cel_0.location
             size = cel_0.size
             im = Image.open('images/screenshot.png')
@@ -239,7 +238,7 @@ class PoleEmplois():
                 lineexec = executor.submit(check_images, 'images/Downloads/cel_'+ str(i) +'.png', 'images/Templates/normal/'+str(a)+'.png')
                 if lineexec.result() == True:
                     #print("cel_"+str(i), " = "+str(a))
-                    elem = WebDriverWait(navigateur, 0.01).until(EC.presence_of_element_located((By.XPATH, "//button[@id='"+"val_cel_"+str(i)+"']")))
+                    elem = self.ut.retry(navigateur, method=By.XPATH, element="//button[@id='"+"val_cel_"+str(i)+"']", objects="single_element", timeout=0.01)
                     dict_pass[elem.get_attribute("class")] = list()
                     dict_pass[elem.get_attribute("class")].append(a)
                     dict_pass[elem.get_attribute("class")].append(elem.get_attribute("id"))
@@ -250,7 +249,7 @@ class PoleEmplois():
                     lineexec = executor.submit(check_images, 'images/Downloads/cel_'+ str(i) +'.png', 'images/Templates/1600x900/'+str(a)+'.png')
                     if lineexec.result() == True:
                         #print("cel_"+str(i), " = "+str(a))
-                        elem = WebDriverWait(navigateur, 0.01).until(EC.presence_of_element_located((By.XPATH, "//button[@id='"+"val_cel_"+str(i)+"']")))
+                        elem = self.ut.retry(navigateur, method=By.XPATH, element="//button[@id='"+"val_cel_"+str(i)+"']", objects="single_element", timeout=0.01)
                         dict_pass[elem.get_attribute("class")] = list()
                         dict_pass[elem.get_attribute("class")].append(a)
                         dict_pass[elem.get_attribute("class")].append(elem.get_attribute("id"))
@@ -265,17 +264,14 @@ class PoleEmplois():
                 #button.click()
 
         navigateur.execute_script("document.getElementById(\"idTouchesCliques\").value=\""+ callback_string +"\";")
-        elem = WebDriverWait(navigateur, 0.01).until(EC.presence_of_element_located((By.XPATH, "//input[@id='idTouchesCliques']")))
+        elem = self.ut.retry(navigateur, method=By.XPATH, element="//input[@id='idTouchesCliques']", objects="single_element", timeout=0.01)
         print(bcolors.OKBLUE + "resolved pad touch '" + callback_string + "'"+ bcolors.ENDC)
         
         interval_login = time.time() - start_time_login
         print( bcolors.UNDERLINE + bcolors.BOLD + bcolors.OKBLUE + 'resolve pad time in seconds:',str(interval_login) + bcolors.ENDC)
         
         #inputPostal = navigateur.find_element_by_id("champTexteCodePostal")
-        inputPostal = WebDriverWait(
-            navigateur, 3).until(
-            EC.presence_of_element_located(
-                (By.ID, "codepostal")))
+        inputPostal = self.ut.retry(navigateur, method=By.ID, element="codepostal", objects="single_element", timeout=3)
         inputPostal.send_keys(Profile[sys.argv[2]][2])
         inputPostal.send_keys(Keys.RETURN)
 
@@ -391,7 +387,7 @@ class PoleEmplois():
                     time.sleep(1)
                     elem = WebDriverWait(navigateur, 5).until(EC.presence_of_element_located((By.XPATH, "//button[@title='Envoyer']")))
                     elem.click()
-
+                    print("Vous avez postulez correctement à l'annonce.")
                     break
                     return False
                 except TimeoutException:
