@@ -37,7 +37,7 @@ class Utils():
             if str(e) == "'retry'":
                 kwargs["retry"] = 3
 
-        print(kwargs)
+
         if kwargs["objects"] == "single_element":
             try:
                 elements = WebDriverWait(navigateur, kwargs["timeout"]).until(EC.presence_of_element_located((kwargs["method"], kwargs["element"])))
