@@ -4,7 +4,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, TimeoutException, StaleElementReferenceException, ElementNotInteractableException
-
+import time
+import re
 
 class bcolors:
     HEADER = '\033[95m'
@@ -22,6 +23,15 @@ class Utils():
     def __init__(self):
         pass
 
+    def cleanhtmls(self, raw_html):
+        raw_html = raw_html.replace('<br>', ' ')
+        raw_html = re.sub('<[^<]+?>', '', raw_html)
+        raw_html = re.sub('&nbsp;', ' ', raw_html)
+        raw_html = re.sub('&amp;', '&', raw_html)
+        raw_html = raw_html.replace('\t', ' ')
+        raw_html = raw_html.replace('\n', ' ')
+        return raw_html
+
     def retry(self, navigateur, **kwargs):
         try:
             kwargs["timeout"]
@@ -37,7 +47,6 @@ class Utils():
             if str(e) == "'retry'":
                 kwargs["retry"] = 3
 
-
         if kwargs["objects"] == "single_element":
             try:
                 elements = WebDriverWait(navigateur, kwargs["timeout"]).until(EC.presence_of_element_located((kwargs["method"], kwargs["element"])))
@@ -49,7 +58,24 @@ class Utils():
                         return elements
                         break
                     except TimeoutException:
-                        return False
+                        pass
+
+        if kwargs["objects"] == "force_find_click":
+            print(kwargs)
+            try:
+                valide = WebDriverWait(navigateur, kwargs["timeout"]).until(EC.presence_of_element_located((kwargs["method"], kwargs["element"])))
+                valide.click()
+            except (TimeoutException, ElementNotInteractableException):
+                try:
+                    for i in range(0, 500):
+                        time.sleep(0.1)
+                        valide = WebDriverWait(navigateur, 5).until(EC.presence_of_element_located((kwargs["method"], kwargs["element_retry"])))
+                        if valide:
+                            print(bcolors.OKBLUE + "séléction automatique '" + self.cleanhtmls(valide.get_attribute("innerHTML")) +"'" + bcolors.ENDC)
+                            valide.click()
+                            break
+                except (TimeoutException, ElementNotInteractableException):
+                    pass
 
         if kwargs["objects"] == "input":
             try:

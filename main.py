@@ -95,7 +95,7 @@ class PoleEmplois():
         
         login = self.InputLogin(self.navigateur, compte, password)
         if login == False:
-        	self.InputLogin(self.navigateur, compte, password, True)
+            self.InputLogin(self.navigateur, compte, password, True)
 
         interval_login = time.time() - start_time_login
         print("\033[92m" + 'Total time login in seconds:', str(interval_login) + "\033[0m")
@@ -127,7 +127,7 @@ class PoleEmplois():
                             break
                 
                     if sys.argv[3] == "search":
-                    	while 1:
+                        while 1:
                            search = self.search(self.navigateur)
             except (TimeoutException, IndexError):
                 pass
@@ -183,8 +183,8 @@ class PoleEmplois():
 
     def InputLogin(self, navigateur, account, password, resend=False):
         if resend:
-        	url = "https://candidat.pole-emploi.fr/candidat/espacepersonnel/authentification/"
-        	navigateur.get(url)
+            url = "https://candidat.pole-emploi.fr/candidat/espacepersonnel/authentification/"
+            navigateur.get(url)
 
         # input ID
         self.ut.retry(navigateur,
@@ -197,15 +197,16 @@ class PoleEmplois():
                       message="Enter ID with input", 
                       message_fail="Timeout check element recheck...",
                       timeout=3,
-                      timeout_fail=10)
+                      timeout_fail=10, 
+                      retry=3)
 
         time.sleep(0.3)
         start_time_login = time.time()
         try:
-            cel_0 = self.ut.retry(navigateur, method=By.ID, element="val_cel_0", objects="single_element", timeout=5)
-            cel_9 = self.ut.retry(navigateur, method=By.ID, element="val_cel_9", objects="single_element", timeout=5)
+            cel_0 = self.ut.retry(navigateur, method=By.ID, element="val_cel_0", objects="single_element", timeout=5, retry=3)
+            cel_9 = self.ut.retry(navigateur, method=By.ID, element="val_cel_9", objects="single_element", timeout=5, retry=3)
         except TimeoutException:
-        	return  False
+            return  False
 
         if cel_0 and cel_9:
             navigateur.save_screenshot('images/screenshot.png')
@@ -214,7 +215,7 @@ class PoleEmplois():
             exit()
 
         for i in range(0,10):
-            cel_0 = self.ut.retry(navigateur, method=By.ID, element="val_cel_"+str(i), objects="single_element", timeout=0.01)
+            cel_0 = self.ut.retry(navigateur, method=By.ID, element="val_cel_"+str(i), objects="single_element", timeout=0.01, retry=3)
             location = cel_0.location
             size = cel_0.size
             im = Image.open('images/screenshot.png')
@@ -238,7 +239,7 @@ class PoleEmplois():
                 lineexec = executor.submit(check_images, 'images/Downloads/cel_'+ str(i) +'.png', 'images/Templates/normal/'+str(a)+'.png')
                 if lineexec.result() == True:
                     #print("cel_"+str(i), " = "+str(a))
-                    elem = self.ut.retry(navigateur, method=By.XPATH, element="//button[@id='"+"val_cel_"+str(i)+"']", objects="single_element", timeout=0.01)
+                    elem = self.ut.retry(navigateur, method=By.XPATH, element="//button[@id='"+"val_cel_"+str(i)+"']", objects="single_element", timeout=0.01, retry=3)
                     dict_pass[elem.get_attribute("class")] = list()
                     dict_pass[elem.get_attribute("class")].append(a)
                     dict_pass[elem.get_attribute("class")].append(elem.get_attribute("id"))
@@ -249,7 +250,7 @@ class PoleEmplois():
                     lineexec = executor.submit(check_images, 'images/Downloads/cel_'+ str(i) +'.png', 'images/Templates/1600x900/'+str(a)+'.png')
                     if lineexec.result() == True:
                         #print("cel_"+str(i), " = "+str(a))
-                        elem = self.ut.retry(navigateur, method=By.XPATH, element="//button[@id='"+"val_cel_"+str(i)+"']", objects="single_element", timeout=0.01)
+                        elem = self.ut.retry(navigateur, method=By.XPATH, element="//button[@id='"+"val_cel_"+str(i)+"']", objects="single_element", timeout=0.01, retry=3)
                         dict_pass[elem.get_attribute("class")] = list()
                         dict_pass[elem.get_attribute("class")].append(a)
                         dict_pass[elem.get_attribute("class")].append(elem.get_attribute("id"))
@@ -264,21 +265,21 @@ class PoleEmplois():
                 #button.click()
 
         navigateur.execute_script("document.getElementById(\"idTouchesCliques\").value=\""+ callback_string +"\";")
-        elem = self.ut.retry(navigateur, method=By.XPATH, element="//input[@id='idTouchesCliques']", objects="single_element", timeout=0.01)
+        elem = self.ut.retry(navigateur, method=By.XPATH, element="//input[@id='idTouchesCliques']", objects="single_element", timeout=0.01, retry=3)
         print(bcolors.OKBLUE + "resolved pad touch '" + callback_string + "'"+ bcolors.ENDC)
         
         interval_login = time.time() - start_time_login
         print( bcolors.UNDERLINE + bcolors.BOLD + bcolors.OKBLUE + 'resolve pad time in seconds:',str(interval_login) + bcolors.ENDC)
         
         #inputPostal = navigateur.find_element_by_id("champTexteCodePostal")
-        inputPostal = self.ut.retry(navigateur, method=By.ID, element="codepostal", objects="single_element", timeout=3)
+        inputPostal = self.ut.retry(navigateur, method=By.ID, element="codepostal", objects="single_element", timeout=3, retry=3)
         inputPostal.send_keys(Profile[sys.argv[2]][2])
         inputPostal.send_keys(Keys.RETURN)
 
 
     def deletepopup(self, navigateur):
         try:
-            inputspan = WebDriverWait(navigateur, 5).until(EC.presence_of_element_located((By.XPATH, "//*[@class='js-close-popin']")))
+            inputspan = self.ut.retry(navigateur, method=By.XPATH, element="//*[@class='js-close-popin']", objects="single_element", timeout=5, retry=3)
             inputspan.click()
             return True
         except (TimeoutException, ElementNotInteractableException):
@@ -290,39 +291,31 @@ class PoleEmplois():
         cleantext = re.sub('(rafraîchir ce CV)', '', raw_html)
         return cleantext
 
-    def cleanhtmls(self, raw_html):
-        raw_html = raw_html.replace('<br>', ' ')
-        raw_html = re.sub('<[^<]+?>', '', raw_html)
-        raw_html = re.sub('&nbsp;', ' ', raw_html)
-        raw_html = re.sub('&amp;', '&', raw_html)
-        raw_html = raw_html.replace('\t', ' ')
-        raw_html = raw_html.replace('\n', ' ')
-        return raw_html
 
     def search_result(self, navigateur, ids, back, page_start, page_stop, row):
         ids = ids-(row*10)
-        elem = WebDriverWait(navigateur, 1).until(EC.presence_of_element_located((By.XPATH, "//ul[@id='page_"+page_start+"-"+page_stop+"']/li[@class='result']["+str(ids+1)+"]/div[@id='"+str(ids)+"']/div[@class='media-body']/h2/a")))
+        elem = self.ut.retry(navigateur, method=By.XPATH, element="//ul[@id='page_"+page_start+"-"+page_stop+"']/li[@class='result']["+str(ids+1)+"]/div[@id='"+str(ids)+"']/div[@class='media-body']/h2/a", objects="single_element", timeout=1, retry=3)
         elem.click()
 
         time.sleep(1)
         for i, elem in enumerate(WebDriverWait(navigateur, 8).until(EC.presence_of_all_elements_located((By.XPATH, "//div[@id='detailOffreVolet']")))):
              soup = BeautifulSoup(elem.get_attribute("innerHTML"), 'lxml') # Parse the HTML as a string
              print()
-             print(bcolors.WARNYELLOW + self.cleanhtmls(str(soup.find_all("h2", class_="t2 title")[0])) + bcolors.ENDC)
-             print(bcolors.OKGREEN + self.cleanhtmls(str(soup.find_all("p", class_="t4 title-complementary")[0])) + bcolors.ENDC)
-             print(bcolors.OKGREEN + self.cleanhtmls(str(soup.find_all("p", class_="t5 title-complementary")[0])) + bcolors.ENDC)
+             print(bcolors.WARNYELLOW + self.ut.cleanhtmls(str(soup.find_all("h2", class_="t2 title")[0])) + bcolors.ENDC)
+             print(bcolors.OKGREEN + self.ut.cleanhtmls(str(soup.find_all("p", class_="t4 title-complementary")[0])) + bcolors.ENDC)
+             print(bcolors.OKGREEN + self.ut.cleanhtmls(str(soup.find_all("p", class_="t5 title-complementary")[0])) + bcolors.ENDC)
              print()
-             print(bcolors.OKBLUE + self.cleanhtmls(str(soup.find_all("div", class_="description col-sm-8 col-md-7")[0])) + bcolors.ENDC)
+             print(bcolors.OKBLUE + self.ut.cleanhtmls(str(soup.find_all("div", class_="description col-sm-8 col-md-7")[0])) + bcolors.ENDC)
              print()
              for i in soup.find_all("dd"):
-                print(bcolors.OKBLUE + self.cleanhtmls(str(i)) + bcolors.ENDC)
+                print(bcolors.OKBLUE + self.ut.cleanhtmls(str(i)) + bcolors.ENDC)
              print()
              print(bcolors.WARNYELLOW + "Profil souhaité" + bcolors.ENDC)
              print()
              for a, i in enumerate(soup.find_all("ul", class_="skill-list list-unstyled")):
                 if a == 0:
                     print(bcolors.OKBLUE + "[Expérience]" + bcolors.ENDC)
-                    print(bcolors.OKGREEN + self.cleanhtmls(str(i)) + bcolors.ENDC)
+                    print(bcolors.OKGREEN + self.ut.cleanhtmls(str(i)) + bcolors.ENDC)
                 if a == 1:
                     print(bcolors.OKBLUE + "[Compétences]" + bcolors.ENDC)
                     c = i.find_all("span", class_="skill-name")
@@ -331,9 +324,9 @@ class PoleEmplois():
                     d.append("")
                     for x, y in zip(c, d):
                         if x and y:
-                           print(self.cleanhtmls(str(x)) +" - " + bcolors.WARNING + self.cleanhtmls(str(y)) + bcolors.ENDC)
+                           print(self.ut.cleanhtmls(str(x)) +" - " + bcolors.WARNING + self.ut.cleanhtmls(str(y)) + bcolors.ENDC)
                         else:
-                           print(self.cleanhtmls(str(x)))
+                           print(self.ut.cleanhtmls(str(x)))
                     
                 if a == 2:
                     print(bcolors.OKBLUE + "[Formation]" + bcolors.ENDC)
@@ -343,9 +336,9 @@ class PoleEmplois():
                     d.append("")
                     for x, y in zip(c, d):
                         if x and y:
-                           print(self.cleanhtmls(str(x)) +" - " + bcolors.WARNING + self.cleanhtmls(str(y)) + bcolors.ENDC)
+                           print(self.ut.cleanhtmls(str(x)) +" - " + bcolors.WARNING + self.ut.cleanhtmls(str(y)) + bcolors.ENDC)
                         else:
-                           print(self.cleanhtmls(str(x)))
+                           print(self.ut.cleanhtmls(str(x)))
                 print()
 
 
@@ -368,12 +361,12 @@ class PoleEmplois():
                     elem.click()
 
                     elem = WebDriverWait(navigateur, 5).until(EC.presence_of_element_located((By.XPATH, "//div[@class='main-content']/div[@class='bd']/p")))
-                    print(self.cleanhtmls(elem.get_attribute("innerHTML")))
+                    print(self.ut.cleanhtmls(elem.get_attribute("innerHTML")))
                     count_cv = 0
                     for i, elem in enumerate(WebDriverWait(navigateur, 8).until(EC.presence_of_all_elements_located((By.XPATH, "//div[@class='main-content']/div[@class='bd']/fieldset/div[@class='block group value']/div[@class='outer-block']/div[@class='hd']/h3")))):
-                        print(bcolors.OKGREEN + " --- " + self.cleanhtmls(elem.get_attribute("innerHTML")) + " ---" + bcolors.ENDC)
+                        print(bcolors.OKGREEN + " --- " + self.ut.cleanhtmls(elem.get_attribute("innerHTML")) + " ---" + bcolors.ENDC)
                         for elem in WebDriverWait(navigateur, 8).until(EC.presence_of_all_elements_located((By.XPATH, "//div[@class='main-content']/div[@class='bd']/fieldset/div[@class='block group value']/div[@class='outer-block']/div[@class='bd']["+str(i+1)+"]/fieldset/div[@class='parallel-block-3-2']"))):
-                            print(str(count_cv) +" -"+ bcolors.OKBLUE + self.cleanhtmls(elem.get_attribute("innerHTML")) + bcolors.ENDC)
+                            print(str(count_cv) +" -"+ bcolors.OKBLUE + self.ut.cleanhtmls(elem.get_attribute("innerHTML")) + bcolors.ENDC)
                             count_cv = count_cv + 1
                         print()
                     cv_choisi = input("Séléctionner le cv [0-"+str(count_cv-1)+"]:")
@@ -416,53 +409,40 @@ class PoleEmplois():
 
         navigateur.execute_script("document.getElementById(\"idoffresPartenaires\").checked = false;")
         search_input = input("Séléctionner votre recherche: ")
-        inputs = WebDriverWait(navigateur, 5).until(EC.presence_of_element_located((By.XPATH, "//input[@id='idmotsCles-selectized']")))
+        inputs = self.ut.retry(navigateur, method=By.XPATH, element="//input[@id='idmotsCles-selectized']", objects="single_element", timeout=5, retry=3)
         inputs.send_keys(search_input)
         time.sleep(0.05)
 
-        valide = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.XPATH, "//div[@class='selectize-dropdown-content']/div")))
+        valide = self.ut.retry(navigateur, method=By.XPATH, element="//div[@class='selectize-dropdown-content']/div", objects="single_element", timeout=10, retry=3)
         valide.click()
         
         position_input = input("Séléctionner votre lieux de recherche: ")
-        inputs = WebDriverWait(navigateur, 5).until(EC.presence_of_element_located((By.XPATH, "//input[@id='idlieux-selectized']")))
+        inputs = self.ut.retry(navigateur, method=By.XPATH, element="//input[@id='idlieux-selectized']", objects="single_element", timeout=5, retry=3)
         inputs.click()
 
         for i in range(0, len(position_input)):
             time.sleep(0.01)
             inputs.send_keys(position_input[i])
 
-        try:
-            valide = WebDriverWait(navigateur, 3).until(EC.presence_of_element_located((By.XPATH, "//div[@class='selectize-dropdown-content'][1]/div[2]")))
-            valide.click()
-        except (TimeoutException, ElementNotInteractableException):
-            try:
-                for i in range(0, 500):
-                    time.sleep(0.1)
-                    valide = WebDriverWait(navigateur, 5).until(EC.presence_of_element_located((By.XPATH, "//div[@class='selectize-dropdown-content'][1]/div[1]/div[@class='option active']")))
-                    if valide:
-                        print(bcolors.OKBLUE + "séléction automatique '" + self.cleanhtmls(valide.get_attribute("innerHTML")) +"'" + bcolors.ENDC)
-                        valide.click()
-                        break
-            except (TimeoutException, ElementNotInteractableException):
-                pass
+        inputs = self.ut.retry(navigateur, method=By.XPATH, element="//div[@class='selectize-dropdown-content'][1]/div[2]", element_retry="//div[@class='selectize-dropdown-content'][1]/div[1]/div[@class='option active']", objects="force_find_click", timeout=5, retry=3)
         
-        button = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.XPATH, "//a[@id='btnSubmitRechercheForm']")))
-        print(bcolors.OKBLUE + "click on '"+self.cleanhtmls(button.get_attribute("innerHTML")) +"'" + bcolors.ENDC)
+        button = self.ut.retry(navigateur, method=By.XPATH, element="//a[@id='btnSubmitRechercheForm']", objects="single_element", timeout=10, retry=3)
+        print(bcolors.OKBLUE + "click on '"+self.ut.cleanhtmls(button.get_attribute("innerHTML")) +"'" + bcolors.ENDC)
         button.click()
 
 
         print(""" RESULT SEARCH """)
         for i, elem in enumerate(WebDriverWait(navigateur, 8).until(EC.presence_of_all_elements_located((By.XPATH, "//div[@class='media-body']")))):
             soup = BeautifulSoup(elem.get_attribute("innerHTML"), 'lxml') # Parse the HTML as a string
-            print(str(i) +" " + bcolors.WARNYELLOW + self.cleanhtmls(str(soup.find_all("h2")[0])).strip() + bcolors.ENDC)
+            print(str(i) +" " + bcolors.WARNYELLOW + self.ut.cleanhtmls(str(soup.find_all("h2")[0])).strip() + bcolors.ENDC)
             for a in range(0, len(soup.find_all("p"))):
                 if a == 0:
-                    print(bcolors.OKGREEN + self.cleanhtmls(str(soup.find_all("p")[0])) +  bcolors.ENDC + "\n" + bcolors.OKBLUE + self.cleanhtmls(str(soup.find_all("p")[1])) + bcolors.ENDC)
+                    print(bcolors.OKGREEN + self.ut.cleanhtmls(str(soup.find_all("p")[0])) +  bcolors.ENDC + "\n" + bcolors.OKBLUE + self.ut.cleanhtmls(str(soup.find_all("p")[1])) + bcolors.ENDC)
                 if a == 1:
-                    print(bcolors.OKGREEN + self.cleanhtmls(str(soup.find_all("p")[2])) +  bcolors.ENDC + "\n" + bcolors.OKBLUE + self.cleanhtmls(str(soup.find_all("p")[3])) + bcolors.ENDC)
+                    print(bcolors.OKGREEN + self.ut.cleanhtmls(str(soup.find_all("p")[2])) +  bcolors.ENDC + "\n" + bcolors.OKBLUE + self.ut.cleanhtmls(str(soup.find_all("p")[3])) + bcolors.ENDC)
 
             print()
-            #print(self.cleanhtmls(str(soup.find_all("h2")[0])).strip() + bcolors.ENDC)
+            #print(self.ut.cleanhtmls(str(soup.find_all("h2")[0])).strip() + bcolors.ENDC)
         
         row = 0
         urls = []
@@ -479,7 +459,7 @@ class PoleEmplois():
                     if int(select) >= start and int(select) <= end:
                         urls.append(navigateur.current_url)
                         try:
-                            button = WebDriverWait(navigateur, 1).until(EC.presence_of_element_located((By.XPATH, "//button[@class='eupopup-closebutton btn-reset']")))
+                            button = self.ut.retry(navigateur, method=By.XPATH, element="//button[@class='eupopup-closebutton btn-reset']", objects="single_element", timeout=1, retry=3)
                             button.click()
                             print(bcolors.OKBLUE + "close automatical 'fancy box'" +  bcolors.ENDC)
                         except (TimeoutException, ElementNotInteractableException):
@@ -501,7 +481,7 @@ class PoleEmplois():
 
                                     for i in range(0, row):
                                         time.sleep(0.3)
-                                        plus = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.XPATH, "//p[@id='zoneAfficherPlus']/a")))
+                                        plus = self.ut.retry(navigateur, method=By.XPATH, element="//p[@id='zoneAfficherPlus']/a", objects="single_element", timeout=10, retry=3)
                                         plus.click()
 
                                     result = self.search_result(navigateur, int(select), urls[0], str(start), str(end), row)
@@ -520,12 +500,12 @@ class PoleEmplois():
                 try:
                     for i, elem in enumerate(WebDriverWait(navigateur, 1).until(EC.presence_of_all_elements_located((By.XPATH, "//ul[@id='page_"+str(start)+"-"+str(end)+"']/li[@class='result']/div/div[@class='media-body']")))):
                         soup = BeautifulSoup(elem.get_attribute("innerHTML"), 'lxml') # Parse the HTML as a string
-                        print(str(start+i) +" " + bcolors.WARNYELLOW + self.cleanhtmls(str(soup.find_all("h2")[0])).strip() + bcolors.ENDC)
+                        print(str(start+i) +" " + bcolors.WARNYELLOW + self.ut.cleanhtmls(str(soup.find_all("h2")[0])).strip() + bcolors.ENDC)
                         for a in range(0, len(soup.find_all("p"))):
                             if a == 0:
-                                print(bcolors.OKGREEN + self.cleanhtmls(str(soup.find_all("p")[0])) +  bcolors.ENDC + "\n" + bcolors.OKBLUE + self.cleanhtmls(str(soup.find_all("p")[1])) + bcolors.ENDC)
+                                print(bcolors.OKGREEN + self.ut.cleanhtmls(str(soup.find_all("p")[0])) +  bcolors.ENDC + "\n" + bcolors.OKBLUE + self.ut.cleanhtmls(str(soup.find_all("p")[1])) + bcolors.ENDC)
                             if a == 1:
-                                print(bcolors.OKGREEN + self.cleanhtmls(str(soup.find_all("p")[2])) +  bcolors.ENDC + "\n" + bcolors.OKBLUE + self.cleanhtmls(str(soup.find_all("p")[3])) + bcolors.ENDC)
+                                print(bcolors.OKGREEN + self.ut.cleanhtmls(str(soup.find_all("p")[2])) +  bcolors.ENDC + "\n" + bcolors.OKBLUE + self.ut.cleanhtmls(str(soup.find_all("p")[3])) + bcolors.ENDC)
                         print()
                 except (TimeoutException, ElementNotInteractableException):
                     for i in range(0, 3):
@@ -533,12 +513,12 @@ class PoleEmplois():
                         try:
                             for i, elem in enumerate(WebDriverWait(navigateur, 1).until(EC.presence_of_all_elements_located((By.XPATH, "//ul[@id='page_"+str(start)+"-"+str(end)+"']/li[@class='result']/div/div[@class='media-body']")))):
                                 soup = BeautifulSoup(elem.get_attribute("innerHTML"), 'lxml') # Parse the HTML as a string
-                                print(str(start+i) +" " + bcolors.WARNYELLOW + self.cleanhtmls(str(soup.find_all("h2")[0])).strip() + bcolors.ENDC)
+                                print(str(start+i) +" " + bcolors.WARNYELLOW + self.ut.cleanhtmls(str(soup.find_all("h2")[0])).strip() + bcolors.ENDC)
                                 for a in range(0, len(soup.find_all("p"))):
                                     if a == 0:
-                                        print(bcolors.OKGREEN + self.cleanhtmls(str(soup.find_all("p")[0])) +  bcolors.ENDC + "\n" + bcolors.OKBLUE + self.cleanhtmls(str(soup.find_all("p")[1])) + bcolors.ENDC)
+                                        print(bcolors.OKGREEN + self.ut.cleanhtmls(str(soup.find_all("p")[0])) +  bcolors.ENDC + "\n" + bcolors.OKBLUE + self.ut.cleanhtmls(str(soup.find_all("p")[1])) + bcolors.ENDC)
                                     if a == 1:
-                                        print(bcolors.OKGREEN + self.cleanhtmls(str(soup.find_all("p")[2])) +  bcolors.ENDC + "\n" + bcolors.OKBLUE + self.cleanhtmls(str(soup.find_all("p")[3])) + bcolors.ENDC)
+                                        print(bcolors.OKGREEN + self.ut.cleanhtmls(str(soup.find_all("p")[2])) +  bcolors.ENDC + "\n" + bcolors.OKBLUE + self.ut.cleanhtmls(str(soup.find_all("p")[3])) + bcolors.ENDC)
                                 print()
                         except (TimeoutException, ElementNotInteractableException):
                             navigateur.get(navigateur.current_url)
@@ -551,12 +531,12 @@ class PoleEmplois():
 
                             for i, elem in enumerate(WebDriverWait(navigateur, 1).until(EC.presence_of_all_elements_located((By.XPATH, "//ul[@id='page_"+str(start)+"-"+str(end)+"']/li[@class='result']/div/div[@class='media-body']")))):
                                 soup = BeautifulSoup(elem.get_attribute("innerHTML"), 'lxml') # Parse the HTML as a string
-                                print(str(start+i) +" " + bcolors.WARNYELLOW + self.cleanhtmls(str(soup.find_all("h2")[0])).strip() + bcolors.ENDC)
+                                print(str(start+i) +" " + bcolors.WARNYELLOW + self.ut.cleanhtmls(str(soup.find_all("h2")[0])).strip() + bcolors.ENDC)
                                 for a in range(0, len(soup.find_all("p"))):
                                     if a == 0:
-                                        print(bcolors.OKGREEN + self.cleanhtmls(str(soup.find_all("p")[0])) +  bcolors.ENDC + "\n" + bcolors.OKBLUE + self.cleanhtmls(str(soup.find_all("p")[1])) + bcolors.ENDC)
+                                        print(bcolors.OKGREEN + self.ut.cleanhtmls(str(soup.find_all("p")[0])) +  bcolors.ENDC + "\n" + bcolors.OKBLUE + self.ut.cleanhtmls(str(soup.find_all("p")[1])) + bcolors.ENDC)
                                     if a == 1:
-                                        print(bcolors.OKGREEN + self.cleanhtmls(str(soup.find_all("p")[2])) +  bcolors.ENDC + "\n" + bcolors.OKBLUE + self.cleanhtmls(str(soup.find_all("p")[3])) + bcolors.ENDC)
+                                        print(bcolors.OKGREEN + self.ut.cleanhtmls(str(soup.find_all("p")[2])) +  bcolors.ENDC + "\n" + bcolors.OKBLUE + self.ut.cleanhtmls(str(soup.find_all("p")[3])) + bcolors.ENDC)
                                 print()
 
                         if soup:
@@ -584,12 +564,12 @@ class PoleEmplois():
                 time.sleep(0.1)
                 for i, elem in enumerate(WebDriverWait(navigateur, 8).until(EC.presence_of_all_elements_located((By.XPATH, "//ul[@id='page_"+str(start)+"-"+str(end)+"']/li[@class='result']/div/div[@class='media-body']")))):
                     soup = BeautifulSoup(elem.get_attribute("innerHTML"), 'lxml') # Parse the HTML as a string
-                    print(str(start+i) +" " + bcolors.WARNYELLOW + self.cleanhtmls(str(soup.find_all("h2")[0])).strip() + bcolors.ENDC)
+                    print(str(start+i) +" " + bcolors.WARNYELLOW + self.ut.cleanhtmls(str(soup.find_all("h2")[0])).strip() + bcolors.ENDC)
                     for a in range(0, len(soup.find_all("p"))):
                         if a == 0:
-                            print(bcolors.OKGREEN + self.cleanhtmls(str(soup.find_all("p")[0])) +  bcolors.ENDC + "\n" + bcolors.OKBLUE + self.cleanhtmls(str(soup.find_all("p")[1])) + bcolors.ENDC)
+                            print(bcolors.OKGREEN + self.ut.cleanhtmls(str(soup.find_all("p")[0])) +  bcolors.ENDC + "\n" + bcolors.OKBLUE + self.ut.cleanhtmls(str(soup.find_all("p")[1])) + bcolors.ENDC)
                         if a == 1:
-                            print(bcolors.OKGREEN + self.cleanhtmls(str(soup.find_all("p")[2])) +  bcolors.ENDC + "\n" + bcolors.OKBLUE + self.cleanhtmls(str(soup.find_all("p")[3])) + bcolors.ENDC)
+                            print(bcolors.OKGREEN + self.ut.cleanhtmls(str(soup.find_all("p")[2])) +  bcolors.ENDC + "\n" + bcolors.OKBLUE + self.ut.cleanhtmls(str(soup.find_all("p")[3])) + bcolors.ENDC)
                     print()
                 row = row + 1
 
