@@ -19,11 +19,11 @@ import pickle
 import string
 import os
 from PIL import Image
-from config_bot import *
 import sys
 import re
 import concurrent.futures
 from bs4 import BeautifulSoup
+import yaml
 
 
 
@@ -38,6 +38,9 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
+# Read YML file
+with open("config.yml", 'r') as stream:
+    data_loaded = yaml.load(stream)
 
 # Cookie saver
 def save_cookies(driver, file_path):
@@ -80,6 +83,7 @@ class PoleEmplois():
 
     def __init__(self, compte, password, display):
         start_time = time.time()
+
         #self.display = self.Afficheur(display) 
         self.navigateur = self.Connection(compte)
 
@@ -273,7 +277,7 @@ class PoleEmplois():
         
         #inputPostal = navigateur.find_element_by_id("champTexteCodePostal")
         inputPostal = self.ut.retry(navigateur, method=By.ID, element="codepostal", objects="single_element", timeout=3, retry=3)
-        inputPostal.send_keys(Profile[sys.argv[2]][2])
+        inputPostal.send_keys(data_loaded[sys.argv[2]][2])
         inputPostal.send_keys(Keys.RETURN)
 
 
@@ -628,11 +632,11 @@ class PoleEmplois():
             formationOui = WebDriverWait(navigateur, 8).until(EC.presence_of_element_located((By.XPATH, "//label[@for='formationOui']/strong")))
             formationNon = WebDriverWait(navigateur, 8).until(EC.presence_of_element_located((By.XPATH, "//label[@for='formationNon']/strong")))
  
-            if Profile[sys.argv[2]][3] == "Oui" or Profile[sys.argv[2]][3] == "oui":
+            if data_loaded[sys.argv[2]][3] == "Oui" or data_loaded[sys.argv[2]][3] == "oui":
                 print("Etes-vous inscrit à une session de formation ou suivez-vous une formation ? click on 'Oui'")
                 formationOui.click()
 
-            if Profile[sys.argv[2]][3] == "Non" or Profile[sys.argv[2]][3] == "non":
+            if data_loaded[sys.argv[2]][3] == "Non" or data_loaded[sys.argv[2]][3] == "non":
                 print("Etes-vous inscrit à une session de formation ou suivez-vous une formation ? click on 'Non'")
                 formationNon.click()
 
@@ -645,11 +649,11 @@ class PoleEmplois():
             TravailleOui = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.XPATH, "//label[@for='blocTravail-open']/input")))
             TravailleNon = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.XPATH, "//label[@for='blocTravail-close']/input")))
 
-            if Profile[sys.argv[2]][4] == "Oui" or Profile[sys.argv[2]][4] == "oui":
+            if data_loaded[sys.argv[2]][4] == "Oui" or data_loaded[sys.argv[2]][4] == "oui":
                 print("Avez-vous travaillé ? click on 'Oui'")
                 TravailleOui.click()
 
-            if Profile[sys.argv[2]][4] == "Non" or Profile[sys.argv[2]][4] == "non":
+            if data_loaded[sys.argv[2]][4] == "Non" or data_loaded[sys.argv[2]][4] == "non":
                 print("Avez-vous travaillé ? click on 'Non'")
                 TravailleNon.click()
 
@@ -658,11 +662,11 @@ class PoleEmplois():
             StageOui = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.XPATH, "//label[@for='blocStage-open']/input")))
             StageNon = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.XPATH, "//label[@for='blocStage-close']/input")))
 
-            if Profile[sys.argv[2]][5] == "Oui" or Profile[sys.argv[2]][5] == "oui":
+            if data_loaded[sys.argv[2]][5] == "Oui" or data_loaded[sys.argv[2]][5] == "oui":
                 print("Avez-vous été en stage ? click on 'Oui'")
                 StageOui.click()
 
-            if Profile[sys.argv[2]][5] == "Non" or Profile[sys.argv[2]][5] == "non":
+            if data_loaded[sys.argv[2]][5] == "Non" or data_loaded[sys.argv[2]][5] == "non":
                 print("Avez-vous été en stage ? click on 'Non'")
                 StageNon.click()
            
@@ -670,11 +674,11 @@ class PoleEmplois():
             MaladieOui = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.XPATH, "//label[@for='blocMaladie-open']/input")))
             MaladieNon = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.XPATH, "//label[@for='blocMaladie-close']/input")))
 
-            if Profile[sys.argv[2]][6] == "Oui" or Profile[sys.argv[2]][6] == "oui":
+            if data_loaded[sys.argv[2]][6] == "Oui" or data_loaded[sys.argv[2]][6] == "oui":
                 print("Avez-vous été en arrêt maladie ? click on 'Oui'")
                 MaladieOui.click()
 
-            if Profile[sys.argv[2]][6] == "Non" or Profile[sys.argv[2]][6] == "non":
+            if data_loaded[sys.argv[2]][6] == "Non" or data_loaded[sys.argv[2]][6] == "non":
                 print("Avez-vous été en arrêt maladie ? click on 'Non'")
                 MaladieNon.click()
             
@@ -682,11 +686,11 @@ class PoleEmplois():
             RetraiteOui = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.XPATH, "//label[@for='blocRetraite-open']/input")))
             RetraiteNon = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.XPATH, "//label[@for='blocRetraite-close']/input")))
 
-            if Profile[sys.argv[2]][7] == "Oui" or Profile[sys.argv[2]][7] == "oui":
+            if data_loaded[sys.argv[2]][7] == "Oui" or data_loaded[sys.argv[2]][7] == "oui":
                 print("Percevez-vous une nouvelle pension retraite ? click on 'Oui'")
                 RetraiteOui.click()
 
-            if Profile[sys.argv[2]][7] == "Non" or Profile[sys.argv[2]][7] == "non":
+            if data_loaded[sys.argv[2]][7] == "Non" or data_loaded[sys.argv[2]][7] == "non":
                 print("Percevez-vous une nouvelle pension retraite ? click on 'Non'")
                 RetraiteNon.click()
 
@@ -694,11 +698,11 @@ class PoleEmplois():
             InvaliditeOui = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.XPATH, "//label[@for='blocInvalidite-open']/input")))
             InvaliditeNon = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.XPATH, "//label[@for='blocInvalidite-close']/input")))
 
-            if Profile[sys.argv[2]][8] == "Oui" or Profile[sys.argv[2]][8] == "oui":
+            if data_loaded[sys.argv[2]][8] == "Oui" or data_loaded[sys.argv[2]][8] == "oui":
                 print("Percevez-vous une nouvelle pension d'invalidité de 2ème ou 3ème catégorie ? click on 'Oui'")
                 InvaliditeOui.click()
 
-            if Profile[sys.argv[2]][8] == "Non" or Profile[sys.argv[2]][8] == "non":
+            if data_loaded[sys.argv[2]][8] == "Non" or data_loaded[sys.argv[2]][8] == "non":
                 print("Percevez-vous une nouvelle pension d'invalidité de 2ème ou 3ème catégorie ? click on 'Non'")
                 InvaliditeNon.click()
             
@@ -707,11 +711,11 @@ class PoleEmplois():
             RechercheOui = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.XPATH, "//label[@for='blocRecherche-close']/input")))
             RechercheNon = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.XPATH, "//label[@for='blocRecherche-open']/input")))
 
-            if Profile[sys.argv[2]][9] == "Oui" or Profile[sys.argv[2]][9] == "oui":
+            if data_loaded[sys.argv[2]][9] == "Oui" or data_loaded[sys.argv[2]][9] == "oui":
                 print("Etes-vous toujours à la recherche d'un emploi ? click on 'Oui'")
                 RechercheOui.click()
 
-            if Profile[sys.argv[2]][9] == "Non" or Profile[sys.argv[2]][9] == "non":
+            if data_loaded[sys.argv[2]][9] == "Non" or data_loaded[sys.argv[2]][9] == "non":
                 print("Etes-vous toujours à la recherche d'un emploi ? click on 'Non'")
                 RechercheNon.click()
         except:
@@ -722,4 +726,4 @@ class PoleEmplois():
         exit(0)
 
 if __name__ == '__main__':
-    navigateur = PoleEmplois(Profile[sys.argv[2]][0], Profile[sys.argv[2]][1], True)
+    navigateur = PoleEmplois(data_loaded[sys.argv[2]][0], data_loaded[sys.argv[2]][1], True)
