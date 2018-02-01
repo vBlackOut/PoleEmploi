@@ -36,7 +36,7 @@ Robots PoleEmploi Selenium Python
 
 ## For run
 ```
-# edit config_bot.py
+# edit config.yml
 python3 main.py -p your_profile check
 
 # check information cv number visitors/proposale appointment 
