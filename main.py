@@ -279,6 +279,7 @@ class PoleEmplois():
         inputPostal = self.ut.retry(navigateur, method=By.ID, element="codepostal", objects="single_element", timeout=3, retry=3)
         inputPostal.send_keys(data_loaded[sys.argv[2]][2])
         inputPostal.send_keys(Keys.RETURN)
+        return True
 
 
     def deletepopup(self, navigateur):
@@ -466,7 +467,7 @@ class PoleEmplois():
                             button = self.ut.retry(navigateur, method=By.XPATH, element="//button[@class='eupopup-closebutton btn-reset']", objects="single_element", timeout=1, retry=3)
                             button.click()
                             print(bcolors.OKBLUE + "close automatical 'fancy box'" +  bcolors.ENDC)
-                        except (TimeoutException, ElementNotInteractableException):
+                        except (TimeoutException, ElementNotInteractableException, AttributeError):
                             pass
                         try:
                             result = self.search_result(navigateur, int(select), urls[0], str(start), str(end), row)
