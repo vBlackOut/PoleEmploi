@@ -83,8 +83,8 @@ class PoleEmplois():
 
     def __init__(self, compte, password, display):
         start_time = time.time()
-
-        #self.display = self.Afficheur(display) 
+        if display == True or display == False:
+          self.display = self.Afficheur(display) 
         self.navigateur = self.Connection(compte)
 
         navigationStart = self.navigateur.execute_script("return window.performance.timing.navigationStart")
@@ -796,4 +796,4 @@ class PoleEmplois():
         exit(0)
 
 if __name__ == '__main__':
-    navigateur = PoleEmplois(data_loaded[sys.argv[2]][0], data_loaded[sys.argv[2]][1], True)
+    navigateur = PoleEmplois(data_loaded[sys.argv[2]][0], data_loaded[sys.argv[2]][1], False)
