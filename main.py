@@ -199,8 +199,8 @@ class PoleEmplois():
                       element_input="submit", 
                       message="Enter ID with input", 
                       message_fail="Timeout check element recheck...",
-                      timeout=3,
-                      timeout_fail=10, 
+                      timeout=2,
+                      timeout_fail=3, 
                       retry=3)
 
         time.sleep(0.3)
@@ -210,13 +210,13 @@ class PoleEmplois():
                               element="val_cel_0", 
                               objects="single_element", 
                               timeout=5, 
-                              retry=3)
+                              retry=1)
 
         cel_9 = self.ut.retry(method=By.ID,
                               element="val_cel_9",
                               objects="single_element",
                               timeout=5,
-                              retry=3)
+                              retry=1)
 
         if cel_0 and cel_9:
             navigateur.save_screenshot('images/screenshot.png')
