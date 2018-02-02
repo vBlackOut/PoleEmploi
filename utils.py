@@ -61,7 +61,6 @@ class Utils():
                         pass
 
         if kwargs["objects"] == "force_find_click":
-            print(kwargs)
             try:
                 valide = WebDriverWait(navigateur, kwargs["timeout"]).until(EC.presence_of_element_located((kwargs["method"], kwargs["element"])))
                 valide.click()
