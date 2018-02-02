@@ -93,7 +93,7 @@ class PoleEmplois():
 
         backendPerformance = responseStart - navigationStart
         frontendPerformance = domComplete - responseStart
-        self.ut = Utils()
+        self.ut = Utils(self.navigateur)
 
         start_time_login = time.time()
         
@@ -191,8 +191,7 @@ class PoleEmplois():
             navigateur.get(url)
 
         # input ID
-        self.ut.retry(navigateur,
-                      method=By.XPATH, 
+        self.ut.retry(method=By.XPATH, 
                       element="//input[@id='identifiant']", 
                       objects="input", 
                       send_keys=account, 
@@ -207,15 +206,13 @@ class PoleEmplois():
         time.sleep(0.3)
         start_time_login = time.time()
 
-        cel_0 = self.ut.retry(navigateur, 
-                              method=By.ID, 
+        cel_0 = self.ut.retry(method=By.ID, 
                               element="val_cel_0", 
                               objects="single_element", 
                               timeout=5, 
                               retry=3)
 
-        cel_9 = self.ut.retry(navigateur, 
-                              method=By.ID,
+        cel_9 = self.ut.retry(method=By.ID,
                               element="val_cel_9",
                               objects="single_element",
                               timeout=5,
@@ -228,8 +225,7 @@ class PoleEmplois():
             exit()
 
         for i in range(0,10):
-            cel_0 = self.ut.retry(navigateur, 
-                                  method=By.ID, 
+            cel_0 = self.ut.retry(method=By.ID, 
                                   element="val_cel_"+str(i), 
                                   objects="single_element", 
                                   timeout=0.01, 
@@ -259,8 +255,7 @@ class PoleEmplois():
                                            'images/Templates/normal/'+str(a)+'.png')
                 if lineexec.result() == True:
                     #print("cel_"+str(i), " = "+str(a))
-                    elem = self.ut.retry(navigateur,
-                                         method=By.XPATH,
+                    elem = self.ut.retry(method=By.XPATH,
                                          element="//button[@id='"+"val_cel_"+str(i)+"']",
                                          objects="single_element",
                                          timeout=0.01,
@@ -277,8 +272,7 @@ class PoleEmplois():
                                               'images/Templates/1600x900/'+str(a)+'.png')
                     if lineexec.result() == True:
                         #print("cel_"+str(i), " = "+str(a))
-                        elem = self.ut.retry(navigateur,
-                                             method=By.XPATH,
+                        elem = self.ut.retry(method=By.XPATH,
                                              element="//button[@id='"+"val_cel_"+str(i)+"']",
                                              objects="single_element",
                                              timeout=0.01,
@@ -297,8 +291,7 @@ class PoleEmplois():
                 #button.click()
 
         navigateur.execute_script("document.getElementById(\"idTouchesCliques\").value=\""+ callback_string +"\";")
-        elem = self.ut.retry(navigateur, 
-                             method=By.XPATH, 
+        elem = self.ut.retry(method=By.XPATH, 
                              element="//input[@id='idTouchesCliques']", 
                              objects="single_element", 
                              timeout=0.01, 
@@ -311,8 +304,7 @@ class PoleEmplois():
                + bcolors.ENDC)
         
         #inputPostal = navigateur.find_element_by_id("champTexteCodePostal")
-        inputPostal = self.ut.retry(navigateur, 
-                                    method=By.ID, 
+        inputPostal = self.ut.retry(method=By.ID, 
                                     element="codepostal", 
                                     objects="single_element", 
                                     timeout=3, 
@@ -324,8 +316,7 @@ class PoleEmplois():
 
     def deletepopup(self, navigateur):
         try:
-            inputspan = self.ut.retry(navigateur, 
-                                      method=By.XPATH, 
+            inputspan = self.ut.retry(method=By.XPATH, 
                                       element="//*[@class='js-close-popin']", 
                                       objects="single_element", 
                                       timeout=5, 
@@ -344,8 +335,7 @@ class PoleEmplois():
 
     def search_result(self, navigateur, ids, back, page_start, page_stop, row):
         ids = ids-(row*10)
-        elem = self.ut.retry(navigateur, 
-                             method=By.XPATH, 
+        elem = self.ut.retry(method=By.XPATH, 
                              element="//ul[@id='page_"+page_start+"-"+page_stop+"']/li[@class='result']["+str(ids+1)+"]/div[@id='"+str(ids)+"']/div[@class='media-body']/h2/a", 
                              objects="single_element", 
                              timeout=1, 
@@ -464,8 +454,7 @@ class PoleEmplois():
 
         navigateur.execute_script("document.getElementById(\"idoffresPartenaires\").checked = false;")
         search_input = input("Séléctionner votre recherche: ")
-        inputs = self.ut.retry(navigateur, 
-                               method=By.XPATH, 
+        inputs = self.ut.retry(method=By.XPATH, 
                                element="//input[@id='idmotsCles-selectized']", 
                                objects="single_element", 
                                timeout=5, 
@@ -473,8 +462,7 @@ class PoleEmplois():
         inputs.send_keys(search_input)
         time.sleep(0.05)
 
-        valide = self.ut.retry(navigateur, 
-                               method=By.XPATH, 
+        valide = self.ut.retry(method=By.XPATH, 
                                element="//div[@class='selectize-dropdown-content']/div", 
                                objects="single_element", 
                                timeout=10, 
@@ -482,8 +470,7 @@ class PoleEmplois():
         valide.click()
         
         position_input = input("Séléctionner votre lieux de recherche: ")
-        inputs = self.ut.retry(navigateur, 
-                               method=By.XPATH, 
+        inputs = self.ut.retry(method=By.XPATH, 
                                element="//input[@id='idlieux-selectized']", 
                                objects="single_element", 
                                timeout=5, 
@@ -494,16 +481,14 @@ class PoleEmplois():
             time.sleep(0.01)
             inputs.send_keys(position_input[i])
 
-        inputs = self.ut.retry(navigateur, 
-                               method=By.XPATH, 
+        inputs = self.ut.retry(method=By.XPATH, 
                                element="//div[@class='selectize-dropdown-content'][1]/div[2]", 
                                element_retry="//div[@class='selectize-dropdown-content'][1]/div[1]/div[@class='option active']", 
                                objects="force_find_click", 
                                timeout=5, 
                                retry=3)
         
-        button = self.ut.retry(navigateur, 
-                               method=By.XPATH, 
+        button = self.ut.retry(method=By.XPATH, 
                                element="//a[@id='btnSubmitRechercheForm']", 
                                objects="single_element", 
                                timeout=10, 
@@ -540,8 +525,7 @@ class PoleEmplois():
                     if int(select) >= start and int(select) <= end:
                         urls.append(navigateur.current_url)
                         try:
-                            button = self.ut.retry(navigateur, 
-                                                   method=By.XPATH, 
+                            button = self.ut.retry(method=By.XPATH, 
                                                    element="//button[@class='eupopup-closebutton btn-reset']", 
                                                    objects="single_element", 
                                                    timeout=1, 
@@ -567,8 +551,7 @@ class PoleEmplois():
 
                                     for i in range(0, row):
                                         time.sleep(0.3)
-                                        plus = self.ut.retry(navigateur, 
-                                                             method=By.XPATH, 
+                                        plus = self.ut.retry(method=By.XPATH, 
                                                              element="//p[@id='zoneAfficherPlus']/a", 
                                                              objects="single_element", 
                                                              timeout=10, 
