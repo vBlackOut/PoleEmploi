@@ -343,7 +343,11 @@ class PoleEmplois():
         elem.click()
 
         time.sleep(1)
-        for i, elem in enumerate(WebDriverWait(navigateur, 8).until(EC.presence_of_all_elements_located((By.XPATH, "//div[@id='detailOffreVolet']")))):
+        for i, elem in enumerate(self.ut.retry(method=By.XPATH,
+                                               element="//div[@id='detailOffreVolet']",
+                                               objects="all_elements",
+                                               timeout=8,
+                                               retry=3)):
              soup = BeautifulSoup(elem.get_attribute("innerHTML"), 'lxml') # Parse the HTML as a string
              print()
              print(bcolors.WARNYELLOW + self.ut.cleanhtmls(str(soup.find_all("h2", class_="t2 title")[0])) + bcolors.ENDC)
@@ -402,29 +406,59 @@ class PoleEmplois():
 
             if select == "p":
                 try:
-                    elem = WebDriverWait(navigateur, 5).until(EC.presence_of_element_located((By.XPATH, "//div[@id='contactOffreVolet']/p[@class='btn-container']/a")))
-                    elem.click()
+                    self.ut.retry(method=By.XPATH,
+                                  element="//div[@id='contactOffreVolet']/p[@class='btn-container']/a",
+                                  objects="click_element",
+                                  timeout=5,
+                                  retry=3)
 
-                    elem = WebDriverWait(navigateur, 5).until(EC.presence_of_element_located((By.XPATH, "//div[@class='main-content']/div[@class='bd']/p")))
+                    elem = self.ut.retry(method=By.XPATH,
+                                         element="//div[@class='main-content']/div[@class='bd']/p",
+                                         objects="single_element",
+                                         timeout=5,
+                                         retry=3)
                     print(self.ut.cleanhtmls(elem.get_attribute("innerHTML")))
                     count_cv = 0
-                    for i, elem in enumerate(WebDriverWait(navigateur, 8).until(EC.presence_of_all_elements_located((By.XPATH, "//div[@class='main-content']/div[@class='bd']/fieldset/div[@class='block group value']/div[@class='outer-block']/div[@class='hd']/h3")))):
+
+                    for i, elem in enumerate(self.ut.retry(method=By.XPATH,
+                                                           element="//div[@class='main-content']/div[@class='bd']/fieldset/div[@class='block group value']/div[@class='outer-block']/div[@class='hd']/h3",
+                                                           objects="all_elements",
+                                                           timeout=8,
+                                                           retry=3)):
                         print(bcolors.OKGREEN + " --- " + self.ut.cleanhtmls(elem.get_attribute("innerHTML")) + " ---" + bcolors.ENDC)
-                        for elem in WebDriverWait(navigateur, 8).until(EC.presence_of_all_elements_located((By.XPATH, "//div[@class='main-content']/div[@class='bd']/fieldset/div[@class='block group value']/div[@class='outer-block']/div[@class='bd']["+str(i+1)+"]/fieldset/div[@class='parallel-block-3-2']"))):
+
+                        for elem in  self.ut.retry(method=By.XPATH,
+                                                   element="//div[@class='main-content']/div[@class='bd']/fieldset/div[@class='block group value']/div[@class='outer-block']/div[@class='bd']["+str(i+1)+"]/fieldset/div[@class='parallel-block-3-2']",
+                                                   objects="all_elements",
+                                                   timeout=8,
+                                                   retry=3):
                             print(str(count_cv) +" -"+ bcolors.OKBLUE + self.ut.cleanhtmls(elem.get_attribute("innerHTML")) + bcolors.ENDC)
                             count_cv = count_cv + 1
                         print()
+
                     cv_choisi = input("Séléctionner le cv [0-"+str(count_cv-1)+"]:")
                     
-                    for i, elem in enumerate(WebDriverWait(navigateur, 8).until(EC.presence_of_all_elements_located((By.XPATH, "//input[@type='radio']")))):
+                    for i, elem in enumerate(self.ut.retry(method=By.XPATH,
+                                                           element="//input[@type='radio']",
+                                                           objects="all_elements",
+                                                           timeout=8,
+                                                           retry=3)):
                         if i == int(cv_choisi):
                             elem.click()
                     
-                    elem = WebDriverWait(navigateur, 5).until(EC.presence_of_element_located((By.XPATH, "//input[@value='Valider']")))
-                    elem.click()
+                    self.ut.retry(method=By.XPATH,
+                                  element="//input[@value='Valider']",
+                                  objects="click_element",
+                                  timeout=5,
+                                  retry=3)
+
                     time.sleep(1)
-                    elem = WebDriverWait(navigateur, 5).until(EC.presence_of_element_located((By.XPATH, "//button[@title='Envoyer']")))
-                    elem.click()
+                    self.ut.retry(method=By.XPATH,
+                                  element="//button[@title='Envoyer']",
+                                  objects="click_element",
+                                  timeout=5,
+                                  retry=3)
+
                     print("Vous avez postulez correctement à l'annonce.")
                     break
                     return False
@@ -439,13 +473,21 @@ class PoleEmplois():
 
 
     def search(self, navigateur):
-        for elem in WebDriverWait(navigateur, 8).until(EC.presence_of_all_elements_located((By.XPATH, "//h2[@class='category-title']/a"))):
+        for elem in self.ut.retry(method=By.XPATH,
+                                  element="//h2[@class='category-title']/a",
+                                  objects="all_elements",
+                                  timeout=8,
+                                  retry=3):
             if elem.get_attribute("innerHTML") == "Ma recherche <br>d'offres":
                 print(bcolors.OKGREEN + "click on '" + elem.get_attribute("innerHTML")+"'" + bcolors.ENDC)
                 elem.click()
                 break
 
-        for elem in WebDriverWait(navigateur, 8).until(EC.presence_of_all_elements_located((By.XPATH, "//h2[@class='category-title']/a"))):
+        for elem in self.ut.retry(method=By.XPATH,
+                                  element="//h2[@class='category-title']/a",
+                                  objects="all_elements",
+                                  timeout=8,
+                                  retry=3):
             if elem.get_attribute("innerHTML") == "La recherche<br>d'offres":
                 print(bcolors.OKGREEN + "click on '" + elem.get_attribute("innerHTML")+"'" + bcolors.ENDC)
                 elem.click()
@@ -498,7 +540,11 @@ class PoleEmplois():
 
 
         print(""" RESULT SEARCH """)
-        for i, elem in enumerate(WebDriverWait(navigateur, 8).until(EC.presence_of_all_elements_located((By.XPATH, "//div[@class='media-body']")))):
+        for i, elem in enumerate(self.ut.retry(method=By.XPATH,
+                                     element="//div[@class='media-body']",
+                                     objects="all_elements",
+                                     timeout=8,
+                                     retry=3)):
             soup = BeautifulSoup(elem.get_attribute("innerHTML"), 'lxml') # Parse the HTML as a string
             print(str(i) +" " + bcolors.WARNYELLOW + self.ut.cleanhtmls(str(soup.find_all("h2")[0])).strip() + bcolors.ENDC)
             for a in range(0, len(soup.find_all("p"))):
@@ -572,7 +618,11 @@ class PoleEmplois():
 
             if isinstance(select, str) and select == "s" or select == "S":
                 try:
-                    for i, elem in enumerate(WebDriverWait(navigateur, 1).until(EC.presence_of_all_elements_located((By.XPATH, "//ul[@id='page_"+str(start)+"-"+str(end)+"']/li[@class='result']/div/div[@class='media-body']")))):
+                    for i, elem in enumerate(self.ut.retry(method=By.XPATH,
+                                                           element="//ul[@id='page_"+str(start)+"-"+str(end)+"']/li[@class='result']/div/div[@class='media-body']",
+                                                           objects="all_elements",
+                                                           timeout=1,
+                                                           retry=3)):
                         soup = BeautifulSoup(elem.get_attribute("innerHTML"), 'lxml') # Parse the HTML as a string
                         print(str(start+i) +" " + bcolors.WARNYELLOW + self.ut.cleanhtmls(str(soup.find_all("h2")[0])).strip() + bcolors.ENDC)
                         for a in range(0, len(soup.find_all("p"))):
@@ -585,7 +635,11 @@ class PoleEmplois():
                     for i in range(0, 3):
                         #print("trying... resolve search")
                         try:
-                            for i, elem in enumerate(WebDriverWait(navigateur, 1).until(EC.presence_of_all_elements_located((By.XPATH, "//ul[@id='page_"+str(start)+"-"+str(end)+"']/li[@class='result']/div/div[@class='media-body']")))):
+                            for i, elem in enumerate(self.ut.retry(method=By.XPATH,
+                                                                   element="//ul[@id='page_"+str(start)+"-"+str(end)+"']/li[@class='result']/div/div[@class='media-body']",
+                                                                   objects="all_elements",
+                                                                   timeout=1,
+                                                                   retry=3)):
                                 soup = BeautifulSoup(elem.get_attribute("innerHTML"), 'lxml') # Parse the HTML as a string
                                 print(str(start+i) +" " + bcolors.WARNYELLOW + self.ut.cleanhtmls(str(soup.find_all("h2")[0])).strip() + bcolors.ENDC)
                                 for a in range(0, len(soup.find_all("p"))):
@@ -600,10 +654,17 @@ class PoleEmplois():
 
                             for i in range(0, row):
                                 time.sleep(0.3)
-                                plus = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.XPATH, "//p[@id='zoneAfficherPlus']/a")))
-                                plus.click()
+                                plus = self.ut.retry(method=By.XPATH,
+                                                     element="//p[@id='zoneAfficherPlus']/a",
+                                                     objects="click_element",
+                                                     timeout=10,
+                                                     retry=3)
 
-                            for i, elem in enumerate(WebDriverWait(navigateur, 1).until(EC.presence_of_all_elements_located((By.XPATH, "//ul[@id='page_"+str(start)+"-"+str(end)+"']/li[@class='result']/div/div[@class='media-body']")))):
+                            for i, elem in enumerate(self.ut.retry(method=By.XPATH,
+                                                                   element="//ul[@id='page_"+str(start)+"-"+str(end)+"']/li[@class='result']/div/div[@class='media-body']",
+                                                                   objects="all_elements",
+                                                                   timeout=1,
+                                                                   retry=3)):
                                 soup = BeautifulSoup(elem.get_attribute("innerHTML"), 'lxml') # Parse the HTML as a string
                                 print(str(start+i) +" " + bcolors.WARNYELLOW + self.ut.cleanhtmls(str(soup.find_all("h2")[0])).strip() + bcolors.ENDC)
                                 for a in range(0, len(soup.find_all("p"))):
@@ -618,17 +679,20 @@ class PoleEmplois():
                 
 
             if isinstance(select, str) and select == "+":
-                try:
-                    button = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.XPATH, "//button[@class='eupopup-closebutton btn-reset']")))
-                    button.click()
-                    print(bcolors.OKBLUE + "close automatical 'fancy box'" +  bcolors.ENDC)
-                except (TimeoutException, ElementNotInteractableException):
-                    pass
+                fancy = self.ut.retry(method=By.XPATH,
+                             element="//button[@class='eupopup-closebutton btn-reset']",
+                             objects="click_element",
+                             timeout=10,
+                             retry=3)
+                if fancy:
+                  print(bcolors.OKBLUE + "close automatical 'fancy box'" +  bcolors.ENDC)
 
-                plus = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.XPATH, "//p[@id='zoneAfficherPlus']/a")))
-                plus.click()
+                self.ut.retry(method=By.XPATH,
+                             element="//p[@id='zoneAfficherPlus']/a",
+                             objects="click_element",
+                             timeout=10,
+                             retry=3)
             
-
                 print(""" RESULT SEARCH """)
                 start = end+1
                 end = start+9
@@ -636,7 +700,11 @@ class PoleEmplois():
                 end_row = start_row+9
 
                 time.sleep(0.1)
-                for i, elem in enumerate(WebDriverWait(navigateur, 8).until(EC.presence_of_all_elements_located((By.XPATH, "//ul[@id='page_"+str(start)+"-"+str(end)+"']/li[@class='result']/div/div[@class='media-body']")))):
+                for i, elem in enumerate(self.ut.retry(method=By.XPATH,
+                                                       element="//ul[@id='page_"+str(start)+"-"+str(end)+"']/li[@class='result']/div/div[@class='media-body']",
+                                                       objects="all_elements",
+                                                       timeout=8,
+                                                       retry=3)):
                     soup = BeautifulSoup(elem.get_attribute("innerHTML"), 'lxml') # Parse the HTML as a string
                     print(str(start+i) +" " + bcolors.WARNYELLOW + self.ut.cleanhtmls(str(soup.find_all("h2")[0])).strip() + bcolors.ENDC)
                     for a in range(0, len(soup.find_all("p"))):
@@ -654,53 +722,92 @@ class PoleEmplois():
     def cv(self, navigateur):
         print()
 
-        for elem in WebDriverWait(navigateur, 8).until(EC.presence_of_all_elements_located((By.XPATH, "//h2[@class='category-title']/a"))):
+        for elem in self.ut.retry(method=By.XPATH,
+                                  element="//h2[@class='category-title']/a",
+                                  objects="all_elements",
+                                  timeout=8,
+                                  retry=3):
             if elem.get_attribute("innerHTML") == "Mes candidatures,<br> CV et propositions":
                 print(bcolors.OKGREEN + "click on '" + elem.get_attribute("innerHTML")+"'" + bcolors.ENDC)
                 elem.click()
                 break
 
-        for elem in WebDriverWait(navigateur, 8).until(EC.presence_of_all_elements_located((By.XPATH, "//h2[@class='category-title']/a"))):
+        for elem in self.ut.retry(method=By.XPATH,
+                                  element="//h2[@class='category-title']/a",
+                                  objects="all_elements",
+                                  timeout=8,
+                                  retry=3):
             if elem.get_attribute("innerHTML") == "Mes <br>CV":
                 print(bcolors.OKGREEN + "click on '" + elem.get_attribute("innerHTML")+"'"+ bcolors.ENDC)
                 elem.click()
                 break
 
 
-        for i, elem in enumerate(WebDriverWait(navigateur, 8).until(EC.presence_of_all_elements_located((By.XPATH, "//h2[@class='block-title']/a")))):
+        for i, elem in enumerate(self.ut.retry(method=By.XPATH,
+                                               element="//h2[@class='block-title']/a",
+                                               objects="all_elements",
+                                               timeout=8,
+                                               retry=3)):
             print()
-            cvspan = WebDriverWait(navigateur, 8).until(EC.presence_of_all_elements_located((By.XPATH, "//h2[@class='block-title']/span[@class='date-refresh ng-scope']")))
+            cvspan = self.ut.retry(method=By.XPATH,
+                                    element="//h2[@class='block-title']/span[@class='date-refresh ng-scope']",
+                                    objects="all_elements",
+                                    timeout=8,
+                                    retry=3)
             print(bcolors.OKBLUE + elem.get_attribute("innerHTML") + " ( " + self.cleanhtml(cvspan[i].get_attribute("outerHTML")).strip() + "(s) ) "+ bcolors.ENDC)
             
-            try:
-               cvsupdate = WebDriverWait(navigateur, 8).until(EC.presence_of_all_elements_located((By.XPATH, "//div[@class='hd']/span[@class='flag-unit']/span[@class='flag-txt ng-binding']")))
-               print("\033[0;33m" + bcolors.UNDERLINE + bcolors.BOLD +" > " +cvsupdate[i].get_attribute("innerHTML")+ " < \033[0m")
-            except:
-               pass
+            cvsupdate = self.ut.retry(method=By.XPATH,
+                                      element="//div[@class='hd']/span[@class='flag-unit']/span[@class='flag-txt ng-binding']",
+                                      objects="all_elements",
+                                      timeout=8,
+                                      retry=3)
+            if cvsupdate:
+                print("\033[0;33m" + bcolors.UNDERLINE + bcolors.BOLD +" > " +cvsupdate[i].get_attribute("innerHTML")+ " < \033[0m")
 
-            cvspan = WebDriverWait(navigateur, 8).until(EC.presence_of_all_elements_located((By.XPATH, "//div[@class='primary']/div[@class='parallel-unit']/span[@class='value ng-binding']")))
+
+            cvspan = self.ut.retry(method=By.XPATH,
+                                   element="//div[@class='primary']/div[@class='parallel-unit']/span[@class='value ng-binding']",
+                                   objects="all_elements",
+                                   timeout=8,
+                                   retry=3)
             print(" > " + cvspan[i].get_attribute("innerHTML"))
 
 
     def actualisation(self, navigateur):
         try:
             try:
-                check_actualisation = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.XPATH, "//div[@class='feature-unit row-2 u-feature span-3']/div[2]/div[2]/p")))
+                check_actualisation = self.ut.retry(method=By.XPATH,
+                                                    element="//div[@class='feature-unit row-2 u-feature span-3']/div[2]/div[2]/p",
+                                                    objects="single_element",
+                                                    timeout=8,
+                                                    retry=3)
                 if "Vous avez déjà déclaré votre situation pour cette période" in check_actualisation.get_attribute("innerHTML"):
                     print(bcolors.FAIL + "Vous êtes déjà actualiser." + bcolors.ENDC)
                     return False
             except:
                 return False
 
-            for elem in WebDriverWait(navigateur, 8).until(EC.presence_of_all_elements_located((By.XPATH, "//span/a"))):
+            for elem in self.ut.retry(method=By.XPATH,
+                                      element="//span/a",
+                                      objects="all_elements",
+                                      timeout=8,
+                                      retry=3):
                 if elem.get_attribute("innerHTML") == "Je m'actualise ?":
                     print("click on '" + elem.get_attribute("innerHTML")+"' ")
                     elem.click()
                     break
 
             # Etes-vous inscrit à une session de formation ou suivez-vous une formation ?
-            formationOui = WebDriverWait(navigateur, 8).until(EC.presence_of_element_located((By.XPATH, "//label[@for='formationOui']/strong")))
-            formationNon = WebDriverWait(navigateur, 8).until(EC.presence_of_element_located((By.XPATH, "//label[@for='formationNon']/strong")))
+            formationOui = self.ut.retry(method=By.XPATH,
+                                         element="//label[@for='formationOui']/strong",
+                                         objects="single_element",
+                                         timeout=8,
+                                         retry=3)
+            formationNon = self.ut.retry(method=By.XPATH,
+                                         element="//label[@for='formationNon']/strong",
+                                         objects="single_element",
+                                         timeout=8,
+                                         retry=3)
  
             if data_loaded[sys.argv[2]][3] == "Oui" or data_loaded[sys.argv[2]][3] == "oui":
                 print("Etes-vous inscrit à une session de formation ou suivez-vous une formation ? click on 'Oui'")
@@ -710,14 +817,26 @@ class PoleEmplois():
                 print("Etes-vous inscrit à une session de formation ou suivez-vous une formation ? click on 'Non'")
                 formationNon.click()
 
-            for elem in WebDriverWait(navigateur, 10).until(EC.presence_of_all_elements_located((By.XPATH, "//button[@class='js-only']"))):
+            for elem in self.ut.retry(method=By.XPATH,
+                                      element="//button[@class='js-only']",
+                                      objects="all_elements",
+                                      timeout=8,
+                                      retry=3):
                 if elem.get_attribute("innerHTML") == "Valider":
                     elem.click()
                     break
 
             #Avez-vous travaillé ?
-            TravailleOui = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.XPATH, "//label[@for='blocTravail-open']/input")))
-            TravailleNon = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.XPATH, "//label[@for='blocTravail-close']/input")))
+            TravailleOui = self.ut.retry(method=By.XPATH,
+                                         element="//label[@for='blocTravail-open']/input",
+                                         objects="single_element",
+                                         timeout=10,
+                                         retry=3)
+            TravailleNon = self.ut.retry(method=By.XPATH,
+                                         element="//label[@for='blocTravail-close']/input",
+                                         objects="single_element",
+                                         timeout=10,
+                                         retry=3)
 
             if data_loaded[sys.argv[2]][4] == "Oui" or data_loaded[sys.argv[2]][4] == "oui":
                 print("Avez-vous travaillé ? click on 'Oui'")
@@ -729,8 +848,16 @@ class PoleEmplois():
 
 
             #Avez-vous été en stage ?
-            StageOui = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.XPATH, "//label[@for='blocStage-open']/input")))
-            StageNon = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.XPATH, "//label[@for='blocStage-close']/input")))
+            StageOui = self.ut.retry(method=By.XPATH,
+                                     element="//label[@for='blocStage-open']/input",
+                                     objects="single_element",
+                                     timeout=10,
+                                     retry=3)
+            StageNon = self.ut.retry(method=By.XPATH,
+                                     element="//label[@for='blocStage-close']/input",
+                                     objects="single_element",
+                                     timeout=10,
+                                     retry=3)
 
             if data_loaded[sys.argv[2]][5] == "Oui" or data_loaded[sys.argv[2]][5] == "oui":
                 print("Avez-vous été en stage ? click on 'Oui'")
@@ -741,8 +868,16 @@ class PoleEmplois():
                 StageNon.click()
            
             #Avez-vous été en arrêt maladie ?
-            MaladieOui = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.XPATH, "//label[@for='blocMaladie-open']/input")))
-            MaladieNon = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.XPATH, "//label[@for='blocMaladie-close']/input")))
+            MaladieOui = self.ut.retry(method=By.XPATH,
+                                     element="//label[@for='blocMaladie-open']/input",
+                                     objects="single_element",
+                                     timeout=10,
+                                     retry=3)
+            MaladieNon = self.ut.retry(method=By.XPATH,
+                                     element="//label[@for='blocMaladie-close']/input",
+                                     objects="single_element",
+                                     timeout=10,
+                                     retry=3)
 
             if data_loaded[sys.argv[2]][6] == "Oui" or data_loaded[sys.argv[2]][6] == "oui":
                 print("Avez-vous été en arrêt maladie ? click on 'Oui'")
@@ -753,8 +888,16 @@ class PoleEmplois():
                 MaladieNon.click()
             
             #Percevez-vous une nouvelle pension retraite ?
-            RetraiteOui = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.XPATH, "//label[@for='blocRetraite-open']/input")))
-            RetraiteNon = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.XPATH, "//label[@for='blocRetraite-close']/input")))
+            RetraiteOui = self.ut.retry(method=By.XPATH,
+                                        element="//label[@for='blocRetraite-open']/input",
+                                        objects="single_element",
+                                        timeout=10,
+                                        retry=3)
+            RetraiteNon = self.ut.retry(method=By.XPATH,
+                                        element="//label[@for='blocRetraite-close']/input",
+                                        objects="single_element",
+                                        timeout=10,
+                                        retry=3)
 
             if data_loaded[sys.argv[2]][7] == "Oui" or data_loaded[sys.argv[2]][7] == "oui":
                 print("Percevez-vous une nouvelle pension retraite ? click on 'Oui'")
@@ -765,8 +908,16 @@ class PoleEmplois():
                 RetraiteNon.click()
 
             #Percevez-vous une nouvelle pension d'invalidité de 2ème ou 3ème catégorie ?
-            InvaliditeOui = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.XPATH, "//label[@for='blocInvalidite-open']/input")))
-            InvaliditeNon = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.XPATH, "//label[@for='blocInvalidite-close']/input")))
+            InvaliditeOui = self.ut.retry(method=By.XPATH,
+                                          element="//label[@for='blocInvalidite-open']/input",
+                                          objects="single_element",
+                                          timeout=10,
+                                          retry=3)
+            InvaliditeNon = self.ut.retry(method=By.XPATH,
+                                          element="//label[@for='blocInvalidite-close']/input",
+                                          objects="single_element",
+                                          timeout=10,
+                                          retry=3)
 
             if data_loaded[sys.argv[2]][8] == "Oui" or data_loaded[sys.argv[2]][8] == "oui":
                 print("Percevez-vous une nouvelle pension d'invalidité de 2ème ou 3ème catégorie ? click on 'Oui'")
@@ -778,8 +929,16 @@ class PoleEmplois():
             
 
             #Etes-vous toujours à la recherche d'un emploi ?
-            RechercheOui = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.XPATH, "//label[@for='blocRecherche-close']/input")))
-            RechercheNon = WebDriverWait(navigateur, 10).until(EC.presence_of_element_located((By.XPATH, "//label[@for='blocRecherche-open']/input")))
+            RechercheOui = self.ut.retry(method=By.XPATH,
+                                          element="//label[@for='blocRecherche-close']/input",
+                                          objects="single_element",
+                                          timeout=10,
+                                          retry=3)
+            RechercheNon = self.ut.retry(method=By.XPATH,
+                                          element="//label[@for='blocRecherche-open']/input",
+                                          objects="single_element",
+                                          timeout=10,
+                                          retry=3)
 
             if data_loaded[sys.argv[2]][9] == "Oui" or data_loaded[sys.argv[2]][9] == "oui":
                 print("Etes-vous toujours à la recherche d'un emploi ? click on 'Oui'")
@@ -796,4 +955,4 @@ class PoleEmplois():
         exit(0)
 
 if __name__ == '__main__':
-    navigateur = PoleEmplois(data_loaded[sys.argv[2]][0], data_loaded[sys.argv[2]][1], False)
+    navigateur = PoleEmplois(data_loaded[sys.argv[2]][0], data_loaded[sys.argv[2]][1], True)
