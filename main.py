@@ -146,16 +146,15 @@ class PoleEmplois():
         print()
 
         try:
-            if sys.argv[4] != "noclose" and len(sys.argv) == 4:
+            if sys.argv[4] != "noclose" and len(sys.argv) == 4 and display == False:
                 print("close normal")
                 self.close(self.navigateur)
-            elif sys.argv[3] != "noclose" and len(sys.argv) == 3:
+            elif sys.argv[3] != "noclose" and len(sys.argv) == 3 and display == False:
                 print("close normal")
                 self.close(self.navigateur)
         except IndexError:
-            pass
-            #print("close normal")
-            #self.close(self.navigateur)
+            print("close normal")
+            self.close(self.navigateur)
 
 
     def Afficheur(self, display):
