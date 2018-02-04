@@ -7,7 +7,7 @@ from pyvirtualdisplay import Display
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import NoSuchElementException, TimeoutException, StaleElementReferenceException, ElementNotInteractableException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException, StaleElementReferenceException, ElementNotInteractableException, SessionNotCreatedException
 
 # other element
 from utils import *
@@ -127,7 +127,19 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
         
         login = self.InputLogin(self.navigateur, compte, password)
         if login == False:
-            self.InputLogin(self.navigateur, compte, password, True)
+            login_retry = self.InputLogin(self.navigateur, compte, password, True)
+            if login_retry == False:
+              try:
+                  self.close(self.navigateur)
+              except (IndexError, SessionNotCreatedException):
+                  _exception = ValueError("divisor must not be zero")
+              finally:
+                  if _exception:
+                      print("close normal")
+                      try:
+                          self.close(self.navigateur)
+                      except SessionNotCreatedException:
+                          exit(0)
 
         interval_login = time.time() - start_time_login
         print("\033[92m" + 'Total time login in seconds:', str(interval_login) + "\033[0m")
@@ -180,9 +192,15 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
             elif sys.argv[3] != "noclose" and len(sys.argv) == 3 or display == False:
                 print("close normal")
                 self.close(self.navigateur)
-        except IndexError:
-            print("close normal")
-            self.close(self.navigateur)
+        except (IndexError, SessionNotCreatedException):
+          _exception = ValueError("divisor must not be zero")
+        finally:
+            if _exception:
+                print("close normal")
+                try:
+                    self.close(self.navigateur)
+                except SessionNotCreatedException:
+                    exit(0)
 
     '''
     Define display for return windows navigator
@@ -233,7 +251,7 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
                       element_input="submit", message="Enter ID with input", 
                       message_fail="Timeout check element recheck...",
                       timeout=5,
-                      timeout_fail=10, retry=5)
+                      timeout_fail=10, retry=3)
 
         if inputs == False:
             return False
@@ -1053,6 +1071,7 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
     '''
     def close(self, navigateur):
         navigateur.close()
+        navigateur.quit()
         exit(0)
 
 if __name__ == '__main__':

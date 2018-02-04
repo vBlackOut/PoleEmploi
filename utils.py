@@ -148,10 +148,8 @@ class Utils():
                         inputs.send_keys(kwargs["send_keys"])
                         #button = self.navigateur.find_element_by_id("boutonContinuer")
                         button = WebDriverWait(self.navigateur, kwargs["timeout_fail"]).until(EC.presence_of_element_located((kwargs["method_input"], kwargs["element_input"])))
-                        if button and inputs:
-                            button.click()
-                            return True
-                            break
+                        button.click()
+                        return True
                     except TimeoutException:
                         continue
                 return False
@@ -182,6 +180,3 @@ class Utils():
                             return elem
                     except TimeoutException:
                         continue
-
-
-
