@@ -112,7 +112,8 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
                                 bcolors.ENDC))
         start_time = time.time()
         if display == True or display == False:
-          self.display = self.Afficheur(display) 
+          self.display = self.Afficheur(display)
+          self.display.start() 
         self.navigateur = self.Connection(compte)
 
         navigationStart = self.navigateur.execute_script("return window.performance.timing.navigationStart")
@@ -124,20 +125,19 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
         self.ut = Utils(self.navigateur)
 
         start_time_login = time.time()
-        
         login = self.InputLogin(self.navigateur, compte, password)
         if login == False:
             login_retry = self.InputLogin(self.navigateur, compte, password, True)
             if login_retry == False:
               try:
-                  self.close(self.navigateur)
+                  self.close(self.navigateur, self.display)
               except (IndexError, SessionNotCreatedException):
                   _exception = ValueError("divisor must not be zero")
               finally:
                   if _exception:
                       print("close normal")
                       try:
-                          self.close(self.navigateur)
+                          self.close(self.navigateur, self.display)
                       except SessionNotCreatedException:
                           exit(0)
 
@@ -188,17 +188,17 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
         try:
             if sys.argv[4] != "noclose" and len(sys.argv) == 4 or display == False:
                 print("close normal")
-                self.close(self.navigateur)
+                self.close(self.navigateur, self.display)
             elif sys.argv[3] != "noclose" and len(sys.argv) == 3 or display == False:
                 print("close normal")
-                self.close(self.navigateur)
+                self.close(self.navigateur, self.display)
         except (IndexError, SessionNotCreatedException):
           _exception = ValueError("divisor must not be zero")
         finally:
             if _exception:
                 print("close normal")
                 try:
-                    self.close(self.navigateur)
+                    self.close(self.navigateur, self.display)
                 except SessionNotCreatedException:
                     exit(0)
 
@@ -208,10 +208,10 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
     def Afficheur(self, display):
         if display == True:
             afficheur = Display(visible=1, size=(1024, 800))
-            afficheur.start()
-        else:
+            return afficheur
+        elif display == False:
             afficheur = Display(visible=0, size=(1024, 800))
-            afficheur.start()
+            return afficheur
 
     '''
     it's used for define broswer selenium and Profile option
@@ -244,19 +244,20 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
             navigateur.get(url)
 
         # input ID
+        if platform.system == "x86_64":
+            time.sleep(0.5)
         inputs = self.ut.retry(method=By.XPATH, 
-                      element="//input[@id='identifiant']", 
+                      element="//input[@name='callback_0']", 
                       objects="input", 
                       send_keys=account, method_input=By.ID, 
                       element_input="submit", message="Enter ID with input", 
                       message_fail="Timeout check element recheck...",
-                      timeout=5,
+                      timeout=10,
                       timeout_fail=10, retry=3)
-
         if inputs == False:
             return False
 
-        time.sleep(0.3)
+        time.sleep(0.5)
         start_time_login = time.time()
 
         cel_0 = self.ut.retry(method=By.ID, 
@@ -1069,10 +1070,11 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
     '''
     Close broswer and exit code
     '''
-    def close(self, navigateur):
+    def close(self, navigateur, xvfb):
         navigateur.close()
+        xvfb.stop()
         navigateur.quit()
         exit(0)
 
 if __name__ == '__main__':
-    navigateur = PoleEmplois(data_loaded[sys.argv[2]][0], data_loaded[sys.argv[2]][1], False)
+    navigateur = PoleEmplois(data_loaded[sys.argv[2]][0], data_loaded[sys.argv[2]][1], True)
