@@ -33,23 +33,49 @@ class Utils():
         return raw_html
 
     def retry(self, **kwargs):
+
         try:
             kwargs["timeout"]
-            kwargs["timeout_fail"]
-            kwargs["retry"]
         except KeyError as e:
             if "'timeout'" == str(e):
                 kwargs["timeout"] = 10
 
+        try:
+            kwargs["timeout_fail"]
+        except KeyError as e:
             if "'timeout_fail'" == str(e):
                 kwargs["timeout_fail"] = 10
 
+        try:
+            kwargs["retry"]
+        except KeyError as e:
             if str(e) == "'retry'":
                 kwargs["retry"] = 3
+
+        try:
+            kwargs["message"]
+        except KeyError as e:
+            if str(e) == "'message'":
+                kwargs["message"] = ""
+
+        try: 
+            kwargs["color"]
+        except KeyError as e:
+            if str(e) == "'color'":
+                kwargs["color"] = bcolors.OKBLUE
 
         if kwargs["objects"] == "single_element":
             try:
                 elements = WebDriverWait(self.navigateur, kwargs["timeout"]).until(EC.presence_of_element_located((kwargs["method"], kwargs["element"])))
+                
+                if kwargs["message"] == "return_cleanhtml":
+                    print(kwargs["color"] + self.ut.cleanhtmls(elem.get_attribute("innerHTML")) + bcolors.ENDC)
+                elif kwargs["message"] == "return":
+                    print(kwargs["color"] + elem.get_attribute("innerHTML") + bcolors.ENDC)
+                else:
+                    if kwargs["message"] != "":
+                        print(kwargs["color"] + kwargs["message"] + bcolors.ENDC)
+
                 return elements
             except TimeoutException:
                 for i in range(0, kwargs["retry"]):
@@ -104,7 +130,7 @@ class Utils():
                 button = WebDriverWait(self.navigateur, kwargs["timeout"]).until(EC.presence_of_element_located((kwargs["method_input"], kwargs["element_input"])))
                 button.click()
                 return True
-            except TimeoutException:
+            except (TimeoutException, ElementNotInteractableException):
                 for i in range(0, kwargs["retry"]):
                     try:
                         print("try for element... (" + str(i)+")")
@@ -121,6 +147,7 @@ class Utils():
                             break
                     except TimeoutException:
                         continue
+                return False
 
         if kwargs["objects"] == "all_elements":
             try:

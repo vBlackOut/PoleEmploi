@@ -190,7 +190,7 @@ class PoleEmplois():
             navigateur.get(url)
 
         # input ID
-        self.ut.retry(method=By.XPATH, 
+        inputs = self.ut.retry(method=By.XPATH, 
                       element="//input[@id='identifiant']", 
                       objects="input", 
                       send_keys=account, 
@@ -198,9 +198,12 @@ class PoleEmplois():
                       element_input="submit", 
                       message="Enter ID with input", 
                       message_fail="Timeout check element recheck...",
-                      timeout=2,
-                      timeout_fail=3, 
-                      retry=3)
+                      timeout=5,
+                      timeout_fail=10, 
+                      retry=5)
+
+        if inputs == False:
+            return False
 
         time.sleep(0.3)
         start_time_login = time.time()
@@ -208,7 +211,7 @@ class PoleEmplois():
         cel_0 = self.ut.retry(method=By.ID, 
                               element="val_cel_0", 
                               objects="single_element", 
-                              timeout=5, 
+                              timeout=5,
                               retry=1)
 
         cel_9 = self.ut.retry(method=By.ID,
@@ -290,13 +293,15 @@ class PoleEmplois():
                 #button.click()
 
         navigateur.execute_script("document.getElementById(\"idTouchesCliques\").value=\""+ callback_string +"\";")
+
         elem = self.ut.retry(method=By.XPATH, 
                              element="//input[@id='idTouchesCliques']", 
                              objects="single_element", 
-                             timeout=0.01, 
+                             timeout=0.01,
+                             message="resolved pad touch '" + callback_string + "'",
+                             color=bcolors.OKBLUE,
                              retry=3)
-        print(bcolors.OKBLUE + "resolved pad touch '" + callback_string + "'"+ bcolors.ENDC)
-        
+
         interval_login = time.time() - start_time_login
         print( bcolors.UNDERLINE + bcolors.BOLD + bcolors.OKBLUE + 
                'resolve pad time in seconds:',str(interval_login) 
@@ -317,10 +322,9 @@ class PoleEmplois():
         try:
             inputspan = self.ut.retry(method=By.XPATH, 
                                       element="//*[@class='js-close-popin']", 
-                                      objects="single_element", 
+                                      objects="click_element", 
                                       timeout=5, 
                                       retry=3)
-            inputspan.click()
             return True
         except (TimeoutException, ElementNotInteractableException):
             return False
@@ -336,10 +340,9 @@ class PoleEmplois():
         ids = ids-(row*10)
         elem = self.ut.retry(method=By.XPATH, 
                              element="//ul[@id='page_"+page_start+"-"+page_stop+"']/li[@class='result']["+str(ids+1)+"]/div[@id='"+str(ids)+"']/div[@class='media-body']/h2/a", 
-                             objects="single_element", 
+                             objects="click_element", 
                              timeout=1, 
                              retry=3)
-        elem.click()
 
         time.sleep(1)
         for i, elem in enumerate(self.ut.retry(method=By.XPATH,
@@ -414,9 +417,9 @@ class PoleEmplois():
                     elem = self.ut.retry(method=By.XPATH,
                                          element="//div[@class='main-content']/div[@class='bd']/p",
                                          objects="single_element",
+                                         message="return_cleanhtml",
                                          timeout=5,
                                          retry=3)
-                    print(self.ut.cleanhtmls(elem.get_attribute("innerHTML")))
                     count_cv = 0
 
                     for i, elem in enumerate(self.ut.retry(method=By.XPATH,
@@ -505,18 +508,16 @@ class PoleEmplois():
 
         valide = self.ut.retry(method=By.XPATH, 
                                element="//div[@class='selectize-dropdown-content']/div", 
-                               objects="single_element", 
+                               objects="click_element", 
                                timeout=10, 
                                retry=3)
-        valide.click()
         
         position_input = input("Séléctionner votre lieux de recherche: ")
         inputs = self.ut.retry(method=By.XPATH, 
                                element="//input[@id='idlieux-selectized']", 
-                               objects="single_element", 
+                               objects="click_element", 
                                timeout=5, 
                                retry=3)
-        inputs.click()
 
         for i in range(0, len(position_input)):
             time.sleep(0.01)
@@ -531,12 +532,11 @@ class PoleEmplois():
         
         button = self.ut.retry(method=By.XPATH, 
                                element="//a[@id='btnSubmitRechercheForm']", 
-                               objects="single_element", 
+                               objects="click_element",
+                               message="return_cleanhtml",
+                               color=bcolors.OKBLUE,
                                timeout=10, 
                                retry=3)
-        print(bcolors.OKBLUE + "click on '"+self.ut.cleanhtmls(button.get_attribute("innerHTML")) +"'" + bcolors.ENDC)
-        button.click()
-
 
         print(""" RESULT SEARCH """)
         for i, elem in enumerate(self.ut.retry(method=By.XPATH,
@@ -572,11 +572,11 @@ class PoleEmplois():
                         try:
                             button = self.ut.retry(method=By.XPATH, 
                                                    element="//button[@class='eupopup-closebutton btn-reset']", 
-                                                   objects="single_element", 
+                                                   objects="click_element",
+                                                   message="close automatical 'fancy box'",
+                                                   color=bcolors.OKBLUE,
                                                    timeout=1, 
                                                    retry=1)
-                            button.click()
-                            print(bcolors.OKBLUE + "close automatical 'fancy box'" +  bcolors.ENDC)
                         except (TimeoutException, ElementNotInteractableException, AttributeError):
                             pass
                         try:
@@ -598,10 +598,9 @@ class PoleEmplois():
                                         time.sleep(0.3)
                                         plus = self.ut.retry(method=By.XPATH, 
                                                              element="//p[@id='zoneAfficherPlus']/a", 
-                                                             objects="single_element", 
+                                                             objects="click_element", 
                                                              timeout=10, 
                                                              retry=1)
-                                        plus.click()
 
                                     result = self.search_result(navigateur, int(select), urls[0], str(start), str(end), row)
                                     if result == False:
