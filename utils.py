@@ -90,6 +90,13 @@ class Utils():
             try:
                 valide = WebDriverWait(self.navigateur, kwargs["timeout"]).until(EC.presence_of_element_located((kwargs["method"], kwargs["element"])))
                 valide.click()
+                if kwargs["message"] == "return_cleanhtml":
+                    print(kwargs["color"] + "click on '" + self.ut.cleanhtmls(elem.get_attribute("innerHTML"))+ "'" + bcolors.ENDC)
+                elif kwargs["message"] == "return":
+                    print(kwargs["color"] + "click on '" + elem.get_attribute("innerHTML")+ "'" + bcolors.ENDC)
+                else:
+                    if kwargs["message"] != "":
+                        print(kwargs["color"] + kwargs["message"] + bcolors.ENDC)
                 return True
             except (TimeoutException, ElementNotInteractableException):
                 for i in range(0, 500):
@@ -152,12 +159,26 @@ class Utils():
         if kwargs["objects"] == "all_elements":
             try:
                 elem = WebDriverWait(self.navigateur, kwargs["timeout"]).until(EC.presence_of_all_elements_located((kwargs["method"], kwargs["element"])))
+                if kwargs["message"] == "return_cleanhtml":
+                    print(kwargs["color"] + "'" + self.ut.cleanhtmls(elem.get_attribute("innerHTML"))+ "'" + bcolors.ENDC)
+                elif kwargs["message"] == "return":
+                    print(kwargs["color"] + "'" + elem.get_attribute("innerHTML")+ "'" + bcolors.ENDC)
+                else:
+                    if kwargs["message"] != "":
+                        print(kwargs["color"] + kwargs["message"] + bcolors.ENDC)
                 return elem
             except TimeoutException:
                 for i in range(0, kwargs["retry"]):
                     try:
                         elem = WebDriverWait(self.navigateur, kwargs["timeout"]).until(EC.presence_of_all_elements_located((kwargs["method"], kwargs["element"])))
                         if elem:
+                            if kwargs["message"] == "return_cleanhtml":
+                                print(kwargs["color"] + "'" +self.ut.cleanhtmls(elem.get_attribute("innerHTML"))+ "'" + bcolors.ENDC)
+                            elif kwargs["message"] == "return":
+                                print(kwargs["color"] + "'" + elem.get_attribute("innerHTML") + "'" + bcolors.ENDC)
+                            else:
+                                if kwargs["message"] != "":
+                                    print(kwargs["color"] + kwargs["message"] + bcolors.ENDC)
                             return elem
                     except TimeoutException:
                         continue

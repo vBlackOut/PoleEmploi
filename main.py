@@ -429,7 +429,7 @@ class PoleEmplois():
                                                            retry=3)):
                         print(bcolors.OKGREEN + " --- " + self.ut.cleanhtmls(elem.get_attribute("innerHTML")) + " ---" + bcolors.ENDC)
 
-                        for elem in  self.ut.retry(method=By.XPATH,
+                        for elem in self.ut.retry(method=By.XPATH,
                                                    element="//div[@class='main-content']/div[@class='bd']/fieldset/div[@class='block group value']/div[@class='outer-block']/div[@class='bd']["+str(i+1)+"]/fieldset/div[@class='parallel-block-3-2']",
                                                    objects="all_elements",
                                                    timeout=8,
@@ -750,10 +750,11 @@ class PoleEmplois():
             cvspan = self.ut.retry(method=By.XPATH,
                                     element="//h2[@class='block-title']/span[@class='date-refresh ng-scope']",
                                     objects="all_elements",
+                                    message=elem.get_attribute("innerHTML") + " ( " + self.cleanhtml(cvspan[i].get_attribute("outerHTML")).strip() + "(s) ) ",
+                                    colors=bcolors.OKBLUE,
                                     timeout=8,
                                     retry=3)
-            print(bcolors.OKBLUE + elem.get_attribute("innerHTML") + " ( " + self.cleanhtml(cvspan[i].get_attribute("outerHTML")).strip() + "(s) ) "+ bcolors.ENDC)
-            
+
             cvsupdate = self.ut.retry(method=By.XPATH,
                                       element="//div[@class='hd']/span[@class='flag-unit']/span[@class='flag-txt ng-binding']",
                                       objects="all_elements",
