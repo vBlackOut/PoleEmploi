@@ -866,12 +866,11 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
             cvspan = self.ut.retry(method=By.XPATH,
                                     element="//h2[@class='block-title']/span[@class='date-refresh ng-scope']",
                                     objects="all_elements",
-                                    message="{}{}{}{}".format(elem.get_attribute("innerHTML"),
-                                                      " ( ", 
-                                                      self.cleanhtml(cvspan[i].get_attribute("outerHTML")).strip(),
-                                                      "(s) ) "),
-                                    colors=bcolors.OKBLUE,
                                     timeout=8, retry=3)
+            if cvspan:
+                print("{}{}{}{}{}{}".format(bcolors.OKBLUE, elem.get_attribute("innerHTML"), " ( ", 
+                        self.cleanhtml(cvspan[i].get_attribute("outerHTML")).strip(),
+                        "(s) ) ", bcolors.ENDC))
 
             cvsupdate = self.ut.retry(method=By.XPATH,
                                       element="//div[@class='hd']/span[@class='flag-unit']/span[@class='flag-txt ng-binding']",
