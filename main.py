@@ -515,7 +515,7 @@ class PoleEmplois():
         position_input = input("Séléctionner votre lieux de recherche: ")
         inputs = self.ut.retry(method=By.XPATH, 
                                element="//input[@id='idlieux-selectized']", 
-                               objects="click_element", 
+                               objects="single_element", 
                                timeout=5, 
                                retry=3)
 
