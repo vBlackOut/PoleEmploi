@@ -955,4 +955,4 @@ class PoleEmplois():
         exit(0)
 
 if __name__ == '__main__':
-    navigateur = PoleEmplois(data_loaded[sys.argv[2]][0], data_loaded[sys.argv[2]][1], True)
+    navigateur = PoleEmplois(data_loaded[sys.argv[2]][0], data_loaded[sys.argv[2]][1], False)
