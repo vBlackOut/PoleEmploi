@@ -24,6 +24,7 @@ import re
 import concurrent.futures
 from bs4 import BeautifulSoup
 import yaml
+import platform
 
 
 # define color for print
@@ -88,6 +89,27 @@ class PoleEmplois():
     option for navigate on the page.
     '''
     def __init__(self, compte, password, display):
+        ___author___ = "vBlackOut"
+        ___version___ = "1.0.3"
+
+        print('''{}
+  _ \    _ \    |      __|      __|    \  |   _ \   |       _ \   _ _|    __| 
+  __/   (   |   |      _|       _|    |\/ |   __/   |      (   |    |   \__ \ 
+ _|    \___/   ____|  ___|     ___|  _|  _|  _|    ____|  \___/   ___|  ____/{}\n
+Author: {}{:>15}{}
+Version: {}{:>10}{}
+Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE, 
+                                bcolors.ENDC,
+                                bcolors.WARNING,
+                                ___author___,
+                                bcolors.ENDC,
+                                bcolors.WARNING,
+                                ___version___, 
+                                bcolors.ENDC,
+                                bcolors.WARNING,
+                                platform.system(),
+                                platform.machine(), 
+                                bcolors.ENDC))
         start_time = time.time()
         if display == True or display == False:
           self.display = self.Afficheur(display) 
