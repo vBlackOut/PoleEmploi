@@ -256,7 +256,7 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
                       send_keys=account, method_input=By.ID, 
                       element_input="submit", message="Enter ID with input", 
                       message_fail="Timeout check element recheck...",
-                      timeout=10,
+                      timeout=10, check_login=True,
                       timeout_fail=10, retry=5)
         if inputs == False:
             return False
