@@ -115,6 +115,8 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
           self.display = self.Afficheur(display)
           self.display.start() 
         self.navigateur = self.Connection(compte)
+        self._exception = True
+
 
         navigationStart = self.navigateur.execute_script("return window.performance.timing.navigationStart")
         responseStart = self.navigateur.execute_script("return window.performance.timing.responseStart")
@@ -132,9 +134,9 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
               try:
                   self.close(self.navigateur, self.display)
               except (IndexError, SessionNotCreatedException):
-                  _exception = ValueError("divisor must not be zero")
+                  self._exception = ValueError("divisor must not be zero")
               finally:
-                  if _exception:
+                  if self._exception:
                       print("close normal")
                       try:
                           self.close(self.navigateur, self.display)
@@ -193,14 +195,16 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
                 print("close normal")
                 self.close(self.navigateur, self.display)
         except (IndexError, SessionNotCreatedException):
-          _exception = ValueError("divisor must not be zero")
+          self._exception = ValueError("divisor must not be zero")
         finally:
-            if _exception:
+            if self._exception:
                 print("close normal")
                 try:
                     self.close(self.navigateur, self.display)
                 except SessionNotCreatedException:
                     exit(0)
+
+
 
     '''
     Define display for return windows navigator
@@ -245,7 +249,7 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
 
         # input ID
         if platform.system == "x86_64":
-            time.sleep(0.5)
+            time.sleep(0.3)
         inputs = self.ut.retry(method=By.XPATH, 
                       element="//input[@name='callback_0']", 
                       objects="input", 
@@ -253,22 +257,22 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
                       element_input="submit", message="Enter ID with input", 
                       message_fail="Timeout check element recheck...",
                       timeout=10,
-                      timeout_fail=10, retry=3)
+                      timeout_fail=10, retry=5)
         if inputs == False:
             return False
 
-        time.sleep(0.5)
+        time.sleep(0.3)
         start_time_login = time.time()
 
         cel_0 = self.ut.retry(method=By.ID, 
                               element="val_cel_0", 
                               objects="single_element", 
-                              timeout=5, retry=1)
+                              timeout=8, retry=3)
 
         cel_9 = self.ut.retry(method=By.ID,
                               element="val_cel_9",
                               objects="single_element",
-                              timeout=5, retry=1)
+                              timeout=8, retry=3)
 
         if cel_0 and cel_9:
             navigateur.save_screenshot('images/screenshot.png')

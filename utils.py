@@ -129,17 +129,17 @@ class Utils():
                     pass
 
         if kwargs["objects"] == "input":
+            print(bcolors.OKBLUE + kwargs["message"] + bcolors.ENDC)
             try:
                 inputs = WebDriverWait(self.navigateur, kwargs["timeout"]).until(EC.presence_of_element_located((kwargs["method"], kwargs["element"])))
-                print(bcolors.OKBLUE + kwargs["message"] + bcolors.ENDC)
                 inputs.send_keys(kwargs["send_keys"])
+                time.sleep(0.1)
                 #button = self.navigateur.find_element_by_id("boutonContinuer")
                 button = WebDriverWait(self.navigateur, kwargs["timeout"]).until(EC.presence_of_element_located((kwargs["method_input"], kwargs["element_input"])))
                 button.click()
-                return True
-            except:
-                try:
-                    for i in range(0, kwargs["retry"]):
+            except (TimeoutException, ElementNotInteractableException):
+                for i in range(0, kwargs["retry"]):
+                    try:
                         print("try for element... (" + str(i)+")")
                         print(bcolors.FAIL + kwargs["message_fail"] + bcolors.ENDC)
                         inputs = WebDriverWait(self.navigateur, kwargs["timeout_fail"]).until(EC.presence_of_element_located((kwargs["method"], kwargs["element"])))
@@ -149,8 +149,10 @@ class Utils():
                         button = WebDriverWait(self.navigateur, kwargs["timeout_fail"]).until(EC.presence_of_element_located((kwargs["method_input"], kwargs["element_input"])))
                         button.click()
                         return True
-                except TimeoutException:
-                    return False
+                    except TimeoutException:
+                        continue
+                return False
+
 
         if kwargs["objects"] == "all_elements":
             try:
