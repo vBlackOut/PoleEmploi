@@ -1,4 +1,4 @@
-#!/usr/bin/python
+﻿#!/usr/bin/python
 # -*- coding: utf-8  -*-
 
 # dependency for Selenium
@@ -9,6 +9,7 @@ from pyvirtualdisplay import Display
 # Dependency for wait element
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import (NoSuchElementException,
                                         TimeoutException,
@@ -103,14 +104,23 @@ class PoleEmplois():
         ___version___ = "1.0.3b (Beta)"
 
         print('''{}
-  _ \    _ \    |      __|      __|    \  |   _ \   |       _ \   _ _|    __|
-  __/   (   |   |      _|       _|    |\/ |   __/   |      (   |    |   \__ \
- _|    \___/   ____|  ___|     ___|  _|  _|  _|    ____|  \___/   ___|  ____/{}
+-----------------------------------------------------------------------------------
+{}  _ \    _ \    |      __|    __|    \  |   _ \   |       _ \   _ _|    __|{}
+{}  __/   (   |   |      _|     _|    |\/ |   __/   |      (   |    |   \__ \{}
+{} _|    \___/   ____|  ___|   ___|  _|  _|  _|    ____|  \___/   ___|  ____/{}
+-----------------------------------------------------------------------------------{}
+
 Author: {}{:>15}{}
 Version: {}{:>18}{}
 Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
-                                     bcolors.ENDC,
-                                     bcolors.WARNING,
+                                     "... ",
+                                     " ... ",
+                                     "... ",
+                                     " ... ",
+                                     "... ",
+	                                 " ... ",
+	                                 bcolors.ENDC,
+	                                 bcolors.WARNING,
                                      ___author___,
                                      bcolors.ENDC,
                                      bcolors.WARNING,
@@ -119,7 +129,7 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
                                      bcolors.WARNING,
                                      platform.system(),
                                      platform.machine(),
-                                     bcolors.ENDC))
+                                     bcolors.ENDC), end='\n')
         start_time = time.time()
         if display is True or display is False:
             self.display = self.Afficheur(display)
@@ -233,13 +243,15 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
         profile = webdriver.FirefoxProfile()
         if os.path.isdir("/home/" + account) is False:
             os.makedirs("/home/" + account)
+        options = Options()
+        options.add_argument("--headless")
         profile.set_preference('browser.download.folderList', 2)
         profile.set_preference('browser.download.manager.showWhenStarting', False)
         profile.set_preference("javascript.enabled", 0)
         profile.set_preference('browser.download.dir', "/home/" + account + "/")
         profile.set_preference("browser.helperApps.neverAsk.saveToDisk", "application/pdf")
         profile.set_preference("pdfjs.disabled", True)
-        navigateur = webdriver.Firefox(profile)
+        navigateur = webdriver.Firefox(profile, firefox_options=options)
         navigateur.get(url)
 
         return navigateur
@@ -1002,9 +1014,8 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
     Close broswer and exit code
     '''
     def close(self, navigateur, xvfb):
-        navigateur.close()
-        xvfb.stop()
         navigateur.quit()
+        xvfb.stop()
         exit(0)
 
 if __name__ == '__main__':
