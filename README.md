@@ -34,7 +34,7 @@ Robots PoleEmploi Selenium Python
 # lxml ( sudo python3 -m pip install lxml ) 
 # pyvirtualdisplay ( sudo python3 -m pip install pyvirtualdisplay ) 
 # YAML (default package is installed but no install > sudo python3 -m pip install yaml) 
-# Firefox > 49.0 
+# PhantomJS 2.1.1 or More
 ```
 
 ## For run
