@@ -12,6 +12,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import (NoSuchElementException,
+                                        WebDriverException,
                                         TimeoutException,
                                         StaleElementReferenceException,
                                         ElementNotInteractableException,
@@ -99,7 +100,7 @@ class PoleEmplois():
     Initalisation account on pole emploi and define the broswer
     option for navigate on the page.
     '''
-    def __init__(self, compte, password, display):
+    def __init__(self, compte, password):
         ___author___ = "vBlackOut"
         ___version___ = "1.0.3b (Beta)"
 
@@ -131,9 +132,6 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
                                      platform.machine(),
                                      bcolors.ENDC), end='\n')
         start_time = time.time()
-        #if display is True or display is False:
-        #    self.display = self.Afficheur(display)
-        #    self.display.start()
         self.navigateur = self.Connection(compte)
         self._exception = True
 
@@ -158,13 +156,12 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
                     if self._exception:
                         print("close normal")
                         try:
-                            self.close(self.navigateur, self.display)
+                            self.close(self.navigateur)
                         except SessionNotCreatedException:
                             exit(0)
 
         interval_login = time.time() - start_time_login
         print("\033[92m" + 'Total time login in seconds:', str(interval_login) + "\033[0m")
-        time.sleep(0.3)
         self.deletepopup(self.navigateur)
         try:
             if sys.argv[3] == "cv":
@@ -222,16 +219,16 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
                 except SessionNotCreatedException:
                     exit(0)
 
-    '''
-    Define display for return windows navigator
-    '''
-    def Afficheur(self, display):
-        if display is True:
-            afficheur = Display(visible=1, size=(1024, 800))
-            return afficheur
-        elif display is False:
-            afficheur = Display(visible=0, size=(1024, 800))
-            return afficheur
+    def page_has_loaded(self, navigateur):
+        page_state = navigateur.execute_script('return document.readyState')
+        if page_state == 'complete':
+            detect_jquery = navigateur.execute_script('return window.jQuery != undefined')
+            if detect_jquery:
+                detect_jquery = navigateur.execute_script('return jQuery.active == 0')
+                if detect_jquery:
+                    print("Page Load Success !")
+                    return True
+        return False
 
     '''
     it's used for define broswer selenium and Profile option
@@ -263,78 +260,72 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
             navigateur.get(url)
 
         # input ID
-        if platform.system == "x86_64":
-            time.sleep(0.3)
-        inputs = self.ut.retry(method=By.XPATH, element="//input[@name='callback_0']",
-                               objects="input", send_keys=account, method_input=By.ID,
-                               element_input="submit", message="Enter ID with input",
-                               message_fail="Timeout check element recheck...",
-                               timeout=10, check_login=True, timeout_fail=10, retry=5)
-        if inputs is False:
-            return False
+        page_load = self.page_has_loaded(navigateur)
+        if page_load:
+            inputs = self.ut.retry(method=By.XPATH, element="//input[@name='callback_0']",
+                                   objects="input", send_keys=account, method_input=By.ID,
+                                   element_input="submit", message="Enter ID with input",
+                                   message_fail="Timeout check element recheck...",
+                                   timeout=10, check_login=True, timeout_fail=10, retry=5)
+            if inputs is False:
+                return False
 
-        time.sleep(0.5)
-        start_time_login = time.time()
+            start_time_login = time.time()
+            # wait for load pad
+            for a, i in enumerate(range(0,9)):
+                time.sleep(0.3)
+                cel_0 = self.ut.retry(method=By.ID,
+                                      element="val_cel_"+str(i),
+                                      objects="single_element",
+                                      timeout=8, retry=3)
+                if cel_0:
+                    print("\033[F\033[K\033[1A")
+                    if i == 0:
+                        a = i+1
+                    if i == 9:
+                        a = i+10
+                    percent = 10*(a+1)+10
+                    if percent != 100:
+                        print("{}{}\n{} {}{}".format(bcolors.WARNING, "Loading pad ...", "#"*(i*2), percent, "%", bcolors.ENDC))
+                        print("\033[F\033[1A")
+                    else:
+                        print("{}{}\n{} {}{}".format(bcolors.OKBLUE, "Loading pad ...","#"*(i*2), percent, "%", bcolors.ENDC))
 
-        cel_0 = self.ut.retry(method=By.ID,
-                              element="val_cel_0",
-                              objects="single_element",
-                              timeout=8, retry=3)
 
-        cel_9 = self.ut.retry(method=By.ID,
-                              element="val_cel_9",
-                              objects="single_element",
-                              timeout=8, retry=3)
+            if cel_0:
+                navigateur.save_screenshot('images/screenshot.png')
+                liste = list(password)
+            else:
+                exit()
 
-        if cel_0 and cel_9:
-            navigateur.save_screenshot('images/screenshot.png')
-            liste = list(password)
-        else:
-            exit()
+            for i in range(0, 10):
+                cel_0 = self.ut.retry(method=By.ID,
+                                      element="val_cel_"+str(i),
+                                      objects="single_element",
+                                      timeout=0.01, retry=3)
+                location = cel_0.location
+                size = cel_0.size
+                im = Image.open('images/screenshot.png')
+                left = location['x']
+                top = location['y']
+                right = location['x'] + size['width']
+                bottom = location['y'] + size['height']
+                im = im.crop((left, top, right, bottom))  # defines crop points
+                im.save('images/Downloads/cel_'+str(i)+'.png')  # saves new cropped image
 
-        for i in range(0, 10):
-            cel_0 = self.ut.retry(method=By.ID,
-                                  element="val_cel_"+str(i),
-                                  objects="single_element",
-                                  timeout=0.01, retry=3)
-            location = cel_0.location
-            size = cel_0.size
-            im = Image.open('images/screenshot.png')
-            left = location['x']
-            top = location['y']
-            right = location['x'] + size['width']
-            bottom = location['y'] + size['height']
-            im = im.crop((left, top, right, bottom))  # defines crop points
-            im.save('images/Downloads/cel_'+str(i)+'.png')  # saves new cropped image
+            dict_pass = {}
+            if os.path.isdir("images/Downloads") is False:
+                os.makedirs("images/Downloads")
 
-        dict_pass = {}
-        if os.path.isdir("images/Downloads") is False:
-            os.makedirs("images/Downloads")
+            # prepare list for password dual loop [(0,0), (0, 1), ... (0, 9), (1, 0), (1, 1), ...]
+            listes = [(x, y) for x in range(0, 10) for y in range(0, 10)]
 
-        # prepare list for password dual loop [(0,0), (0, 1), ... (0, 9), (1, 0), (1, 1), ...]
-        listes = [(x, y) for x in range(0, 10) for y in range(0, 10)]
-
-        print(bcolors.OKBLUE + "Analysing Pad ... please wait" + bcolors.ENDC)
-        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-            for a, i in listes:
-                lineexec = executor.submit(check_images,
-                                           'images/Downloads/cel_'+str(i)+'.png',
-                                           'images/Templates/normal/'+str(a)+'.png')
-                if lineexec.result() is True:
-                    # print("cel_"+str(i), " = "+str(a))
-                    elem = self.ut.retry(method=By.XPATH,
-                                         element="//button[@id='"+"val_cel_"+str(i)+"']",
-                                         objects="single_element", timeout=0.01, retry=3)
-                    dict_pass[elem.get_attribute("class")] = list()
-                    dict_pass[elem.get_attribute("class")].append(a)
-                    dict_pass[elem.get_attribute("class")].append(elem.get_attribute("id"))
-
-        if len(dict_pass.keys()) < 9:
+            print(bcolors.OKBLUE + "Analysing Pad ... please wait" + bcolors.ENDC)
             with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
                 for a, i in listes:
                     lineexec = executor.submit(check_images,
                                                'images/Downloads/cel_'+str(i)+'.png',
-                                               'images/Templates/1600x900/'+str(a)+'.png')
+                                               'images/Templates/normal/'+str(a)+'.png')
                     if lineexec.result() is True:
                         # print("cel_"+str(i), " = "+str(a))
                         elem = self.ut.retry(method=By.XPATH,
@@ -344,35 +335,52 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
                         dict_pass[elem.get_attribute("class")].append(a)
                         dict_pass[elem.get_attribute("class")].append(elem.get_attribute("id"))
 
-        callback_string = ""
-        listes = [(x, y, z) for x in liste for y, z in dict_pass.items()]
-        for attrib, key, value in listes:
-            if int(attrib) == value[0]:
-                # button = WebDriverWait(navigateur, 0.01).until(EC.presence_of_element_located((By.XPATH, "//button[@class='"+key+"']")))
-                # print(key, value[0], value[1])
-                callback_string += value[1]
-                # button.click()
+            if len(dict_pass.keys()) < 9:
+                with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+                    for a, i in listes:
+                        lineexec = executor.submit(check_images,
+                                                   'images/Downloads/cel_'+str(i)+'.png',
+                                                   'images/Templates/1600x900/'+str(a)+'.png')
+                        if lineexec.result() is True:
+                            # print("cel_"+str(i), " = "+str(a))
+                            elem = self.ut.retry(method=By.XPATH,
+                                                 element="//button[@id='"+"val_cel_"+str(i)+"']",
+                                                 objects="single_element", timeout=0.01, retry=3)
+                            dict_pass[elem.get_attribute("class")] = list()
+                            dict_pass[elem.get_attribute("class")].append(a)
+                            dict_pass[elem.get_attribute("class")].append(elem.get_attribute("id"))
 
-        navigateur.execute_script("document.getElementById(\"idTouchesCliques\").value=\""+callback_string+"\";")
+            callback_string = ""
+            listes = [(x, y, z) for x in liste for y, z in dict_pass.items()]
+            for attrib, key, value in listes:
+                if int(attrib) == value[0]:
+                    # button = WebDriverWait(navigateur, 0.01).until(EC.presence_of_element_located((By.XPATH, "//button[@class='"+key+"']")))
+                    # print(key, value[0], value[1])
+                    callback_string += value[1]
+                    # button.click()
 
-        elem = self.ut.retry(method=By.XPATH,
-                             element="//input[@id='idTouchesCliques']",
-                             objects="single_element", timeout=0.01,
-                             message="resolved pad touch '"+callback_string+"'",
-                             color=bcolors.OKBLUE, retry=3)
+            navigateur.execute_script("document.getElementById(\"idTouchesCliques\").value=\""+callback_string+"\";")
 
-        interval_login = time.time() - start_time_login
-        print(bcolors.UNDERLINE + bcolors.BOLD + bcolors.OKBLUE +
-              'resolve pad time in seconds:', str(interval_login) +
-              bcolors.ENDC)
+            elem = self.ut.retry(method=By.XPATH,
+                                 element="//input[@id='idTouchesCliques']",
+                                 objects="single_element", timeout=0.01,
+                                 message="resolved pad touch '"+callback_string+"'",
+                                 color=bcolors.OKBLUE, retry=3)
 
-        # inputPostal = navigateur.find_element_by_id("champTexteCodePostal")
-        inputPostal = self.ut.retry(method=By.ID,
-                                    element="codepostal", objects="single_element",
-                                    timeout=3, retry=3)
-        inputPostal.send_keys(data_loaded[sys.argv[2]][2])
-        inputPostal.send_keys(Keys.RETURN)
-        return True
+            interval_login = time.time() - start_time_login
+            print(bcolors.UNDERLINE + bcolors.BOLD + bcolors.OKBLUE +
+                  'resolve pad time in seconds:', str(interval_login) +
+                  bcolors.ENDC)
+
+            # inputPostal = navigateur.find_element_by_id("champTexteCodePostal")
+            inputPostal = self.ut.retry(method=By.ID,
+                                        element="codepostal", objects="single_element",
+                                        timeout=3, retry=3)
+            inputPostal.send_keys(data_loaded[sys.argv[2]][2])
+            inputPostal.send_keys(Keys.RETURN)
+            return True
+        else:
+            return False
 
     '''
     Delete popup 'fancybox if show'
@@ -1016,4 +1024,4 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
 
 if __name__ == '__main__':
     navigateur = PoleEmplois(data_loaded[sys.argv[2]][0],
-                             data_loaded[sys.argv[2]][1], True)
+                             data_loaded[sys.argv[2]][1])
