@@ -20,6 +20,7 @@ from selenium.common.exceptions import (NoSuchElementException,
 
 # other element
 from utils import *
+from detect_image import *
 
 # Dependancy for other element
 import urllib
@@ -159,9 +160,9 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
                             self.close(self.navigateur)
                         except SessionNotCreatedException:
                             exit(0)
-
         interval_login = time.time() - start_time_login
         print("\033[92m" + 'Total time login in seconds:', str(interval_login) + "\033[0m")
+        
         self.deletepopup(self.navigateur)
         try:
             if sys.argv[3] == "cv":
@@ -273,7 +274,6 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
             start_time_login = time.time()
             # wait for load pad
             for a, i in enumerate(range(0,9)):
-                time.sleep(0.3)
                 cel_0 = self.ut.retry(method=By.ID,
                                       element="val_cel_"+str(i),
                                       objects="single_element",
@@ -323,9 +323,8 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
             print(bcolors.OKBLUE + "Analysing Pad ... please wait" + bcolors.ENDC)
             with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
                 for a, i in listes:
-                    lineexec = executor.submit(check_images,
-                                               'images/Downloads/cel_'+str(i)+'.png',
-                                               'images/Templates/normal/'+str(a)+'.png')
+                    lineexec = executor.submit(calcule_image,
+                                              'cel_'+str(i)+'.png', a)
                     if lineexec.result() is True:
                         # print("cel_"+str(i), " = "+str(a))
                         elem = self.ut.retry(method=By.XPATH,
@@ -840,8 +839,6 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
     shema to find cv page and parse text
     '''
     def cv(self, navigateur):
-        print()
-
         for elem in self.ut.retry(method=By.XPATH,
                                   element="//h2[@class='category-title']/a",
                                   objects="all_elements", timeout=8, retry=3):
