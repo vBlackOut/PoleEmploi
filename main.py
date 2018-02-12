@@ -4,10 +4,10 @@
 # dependency for Selenium
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
-from pyvirtualdisplay import Display
 
 # Dependency for wait element
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.support import expected_conditions as EC
@@ -131,9 +131,9 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
                                      platform.machine(),
                                      bcolors.ENDC), end='\n')
         start_time = time.time()
-        if display is True or display is False:
-            self.display = self.Afficheur(display)
-            self.display.start()
+        #if display is True or display is False:
+        #    self.display = self.Afficheur(display)
+        #    self.display.start()
         self.navigateur = self.Connection(compte)
         self._exception = True
 
@@ -151,7 +151,7 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
             login_retry = self.InputLogin(self.navigateur, compte, password, True)
             if login_retry is False:
                 try:
-                    self.close(self.navigateur, self.display)
+                    self.close(self.navigateur)
                 except (IndexError, SessionNotCreatedException):
                     self._exception = ValueError("divisor must not be zero")
                 finally:
@@ -208,17 +208,17 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
         try:
             if sys.argv[4] != "noclose" and len(sys.argv) == 4 or display is False:
                 print("close normal")
-                self.close(self.navigateur, self.display)
+                self.close(self.navigateur)
             elif sys.argv[3] != "noclose" and len(sys.argv) == 3 or display is False:
                 print("close normal")
-                self.close(self.navigateur, self.display)
+                self.close(self.navigateur)
         except (IndexError, SessionNotCreatedException):
             self._exception = ValueError("divisor must not be zero")
         finally:
             if self._exception:
                 print("close normal")
                 try:
-                    self.close(self.navigateur, self.display)
+                    self.close(self.navigateur)
                 except SessionNotCreatedException:
                     exit(0)
 
@@ -243,15 +243,12 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
         profile = webdriver.FirefoxProfile()
         if os.path.isdir("/home/" + account) is False:
             os.makedirs("/home/" + account)
-        options = Options()
-        options.add_argument("--headless")
-        profile.set_preference('browser.download.folderList', 2)
-        profile.set_preference('browser.download.manager.showWhenStarting', False)
-        profile.set_preference("javascript.enabled", 0)
-        profile.set_preference('browser.download.dir', "/home/" + account + "/")
-        profile.set_preference("browser.helperApps.neverAsk.saveToDisk", "application/pdf")
-        profile.set_preference("pdfjs.disabled", True)
-        navigateur = webdriver.Firefox(profile, firefox_options=options)
+        dcap = dict(DesiredCapabilities.PHANTOMJS)
+        dcap['phantomjs.page.settings.userAgent'] = (
+              "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36")
+        navigateur = webdriver.PhantomJS(desired_capabilities=dcap, service_args=[
+                                 '--ignore-ssl-errors=true', '--ssl-protocol=any', '--web-security=false'])
+        #navigateur = webdriver.Firefox(profile, firefox_options=options)
         navigateur.get(url)
 
         return navigateur
@@ -276,7 +273,7 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
         if inputs is False:
             return False
 
-        time.sleep(0.3)
+        time.sleep(0.5)
         start_time_login = time.time()
 
         cel_0 = self.ut.retry(method=By.ID,
@@ -1013,11 +1010,10 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
     '''
     Close broswer and exit code
     '''
-    def close(self, navigateur, xvfb):
+    def close(self, navigateur):
         navigateur.quit()
-        xvfb.stop()
         exit(0)
 
 if __name__ == '__main__':
     navigateur = PoleEmplois(data_loaded[sys.argv[2]][0],
-                             data_loaded[sys.argv[2]][1], False)
+                             data_loaded[sys.argv[2]][1], True)
