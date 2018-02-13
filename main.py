@@ -245,8 +245,18 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
               "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:57.0) Gecko/20100101 Firefox/57.0")
         navigateur = webdriver.PhantomJS(desired_capabilities=dcap, service_args=[
                                  '--ignore-ssl-errors=true', '--ssl-protocol=any', '--web-security=false', '--disk-cache=yes'])
+        navigateur.set_window_size(400, 300)
         navigateur.get(url)
-
+        navigateur.execute_script("""
+        var toRemove = [];
+        toRemove.push.apply(toRemove, document.querySelectorAll('link[type*=\"/css\"]'));
+        toRemove.push.apply(toRemove, document.querySelectorAll('style'));
+        toRemove.forEach(function(s){
+            s.parentNode.removeChild(s);
+        });
+        [].forEach.call(document.querySelectorAll('[style]'), function(e){
+           e.removeAttribute('style');
+        }); """)
         return navigateur
 
     '''
@@ -254,6 +264,8 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
     search and define password
     '''
     def InputLogin(self, navigateur, account, password, resend=False):
+        getsize = navigateur.get_window_size()
+        print("{}Fix size (Width: {} Height: {}){}".format(bcolors.OKBLUE, getsize['width'], getsize['height'], bcolors.ENDC))
         if resend:
             url = "https://candidat.pole-emploi.fr/candidat/espacepersonnel/authentification/"
             navigateur.get(url)
