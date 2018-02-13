@@ -1,4 +1,4 @@
-#!/usr/bin/python
+﻿#!/usr/bin/python
 # -*- coding: utf-8  -*-
 
 # dependency for Selenium
@@ -244,7 +244,7 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
         dcap['phantomjs.page.settings.userAgent'] = (
               "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:57.0) Gecko/20100101 Firefox/57.0")
         navigateur = webdriver.PhantomJS(desired_capabilities=dcap, service_args=[
-                                 '--ignore-ssl-errors=true', '--ssl-protocol=any', '--web-security=false'])
+                                 '--ignore-ssl-errors=true', '--ssl-protocol=any', '--web-security=false', '--disk-cache=yes'])
         navigateur.get(url)
 
         return navigateur
