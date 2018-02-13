@@ -2,6 +2,7 @@
 import numpy as np
 import cv2
 
+# size 1024*720
 number_detect = { 0:   [[21, 28], [22, 29], 
                         [25, 29], [26, 28],
                         [25, 29], [22, 29],
@@ -71,8 +72,78 @@ number_detect = { 0:   [[21, 28], [22, 29],
                          [20, 23], [20, 20]]
                           }
 
+# size 1600*900
+number_detect_2 = { 0:   [[27, 28], [26, 29],
+                          [22, 28], [23, 29],
+                          [28, 25], [28, 26],
+                          [21, 25], [21, 26],
+                          [28, 21], [28, 22],
+                          [21, 21], [21, 22],
+                          [26, 18], [27, 19],
+                          [23, 18], [22, 19]],
 
-def calcule_image(images_input, number_check):
+                    1:   [[25, 18], [24, 19],
+                          [25, 18], [26, 19],
+                          [26, 29], [26, 18]],
+
+                    2:   [[21, 29], [22, 29],
+                          [27, 24], [25, 26], 
+                          [28, 21], [28, 22], 
+                          [26, 18], [27, 19], 
+                          [23, 18]],
+
+                    3:   [[22, 29], [25, 29],
+                          [27, 28], [27, 23],
+                          [25, 22], [27, 18]],
+
+
+                    4:   [[21, 26], [21, 27],
+                          [28, 27], [22, 27],
+                          [25, 21], [23, 23],
+                          [27, 18], [27, 19]],
+
+                    5:   [[25, 29], [22, 29],
+                          [23, 29], [27, 28],
+                          [27, 23], [22, 22],
+                          [25, 22], [22, 18]],
+
+                    6:   [[27, 23], [28, 24],
+                          [28, 27], [26, 29],
+                          [28, 27], [28, 24],
+                          [24, 22], [25, 22],
+                          [21, 22], [21, 27],
+                          [23, 29], [21, 27],
+                          [21, 24], [22, 23],
+                          [24, 18], [22, 20],
+                          [24, 18], [25, 18]],
+
+                    7:   [[23, 29], [24, 27],
+                          [25, 24], [25, 25],
+                          [26, 22], [27, 20]],
+
+                    8:   [[28, 25], [28, 27],
+                          [26, 29], [28, 27],
+                          [21, 25], [21, 27],
+                          [23, 29], [21, 27],
+                          [23, 21], [23, 22],
+                          [22, 23], [23, 22],
+                          [26, 22], [27, 23],
+                          [26, 22], [26, 21],
+                          [25, 22], [24, 22],
+                          [26, 18], [23, 18]],
+
+                    9:   [[27, 27], [25, 29],
+                          [24, 29], [25, 29],
+                          [24, 25], [25, 25],
+                          [26, 18], [28, 20],
+                          [28, 23], [27, 24],
+                          [28, 25], [28, 20],
+                          [23, 18], [21, 20],
+                          [21, 23], [22, 24],
+                          [21, 23], [21, 20]]
+                          }
+
+def calcule_image(images_input, number_check, listes):
     img = cv2.imread('images/Downloads/{}'.format(images_input))
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
@@ -82,20 +153,22 @@ def calcule_image(images_input, number_check):
     contours = np.vstack(contours).squeeze()
     b = contours.tolist()
     #print(b)
-    a = number_detect[number_check]
+    a = listes[number_check]
     try:
         accuracy = len([a[i] for i in range(0, len(a)) if a[i] == b[i]]) / len(a)
         if accuracy >= 0.79:
             return True
     except:
         return False
+    return False
     #accuracy = correct.sum() / correct.size
 
 
-"""listes = [(x, y) for x in range(0, 10) for y in range(0, 10)]
-for i, a in listes:
-    calcl = calcule_image("cel_{}.png".format(i), a)
-    if calcl:
-        print(calcl, i, a)"""
+#listes = [(x, y) for x in range(0, 10) for y in range(0, 10)]
+#for i, a in listes:
+#    calcl = calcule_image("cel_{}.png".format(i), a)
+#    if calcl:
+#        print(calcl, i, a)
 
-#print(calcule_image("cel_{}.png".format(9), 8))
+#normalize_image("cel_0.png")
+#print(calcule_image("cel_{}.png".format(9), 7))

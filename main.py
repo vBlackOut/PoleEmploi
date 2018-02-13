@@ -1,4 +1,4 @@
-﻿#!/usr/bin/python
+#!/usr/bin/python
 # -*- coding: utf-8  -*-
 
 # dependency for Selenium
@@ -103,7 +103,7 @@ class PoleEmplois():
     '''
     def __init__(self, compte, password):
         ___author___ = "vBlackOut"
-        ___version___ = "1.0.3b (Beta)"
+        ___version___ = "1.0.5c (Beta)"
 
         print('''{}
 -----------------------------------------------------------------------------
@@ -238,15 +238,13 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
         print(bcolors.OKGREEN + "Connection au Pole Emploi" + bcolors.ENDC)
 
         url = "https://candidat.pole-emploi.fr/candidat/espacepersonnel/authentification/"
-        profile = webdriver.FirefoxProfile()
         if os.path.isdir("/home/" + account) is False:
             os.makedirs("/home/" + account)
         dcap = dict(DesiredCapabilities.PHANTOMJS)
         dcap['phantomjs.page.settings.userAgent'] = (
-              "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36")
+              "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:57.0) Gecko/20100101 Firefox/57.0")
         navigateur = webdriver.PhantomJS(desired_capabilities=dcap, service_args=[
                                  '--ignore-ssl-errors=true', '--ssl-protocol=any', '--web-security=false'])
-        #navigateur = webdriver.Firefox(profile, firefox_options=options)
         navigateur.get(url)
 
         return navigateur
@@ -324,7 +322,7 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
             with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
                 for a, i in listes:
                     lineexec = executor.submit(calcule_image,
-                                               'cel_'+str(i)+'.png', a)
+                                               'cel_'+str(i)+'.png', a, number_detect)
                     if lineexec.result() is True:
                         # print("cel_"+str(i), " = "+str(a))
                         elem = self.ut.retry(method=By.XPATH,
@@ -333,6 +331,21 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
                         dict_pass[elem.get_attribute("class")] = list()
                         dict_pass[elem.get_attribute("class")].append(a)
                         dict_pass[elem.get_attribute("class")].append(elem.get_attribute("id"))
+
+            if len(dict_pass.keys()) < 9:
+              with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+                  for a, i in listes:
+                      lineexec = executor.submit(calcule_image,
+                                               'cel_'+str(i)+'.png', a, number_detect_2)
+                      if lineexec.result() is True:
+                          # print("cel_"+str(i), " = "+str(a))
+                          elem = self.ut.retry(method=By.XPATH,
+                                               element="//button[@id='"+"val_cel_"+str(i)+"']",
+                                               objects="single_element", timeout=0.01, retry=3)
+                          dict_pass[elem.get_attribute("class")] = list()
+                          dict_pass[elem.get_attribute("class")].append(a)
+                          dict_pass[elem.get_attribute("class")].append(elem.get_attribute("id"))
+
             interval_login = time.time() - start_time_login
 
             callback_string = ""
