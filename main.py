@@ -20,6 +20,7 @@ from selenium.common.exceptions import (NoSuchElementException,
 
 # other element
 from utils import *
+from detect_image import *
 
 # Dependancy for other element
 import urllib
@@ -145,6 +146,7 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
 
         start_time_login = time.time()
         login = self.InputLogin(self.navigateur, compte, password)
+        interval_login = time.time() - start_time_login
         if login is False:
             login_retry = self.InputLogin(self.navigateur, compte, password, True)
             if login_retry is False:
@@ -160,7 +162,6 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
                         except SessionNotCreatedException:
                             exit(0)
 
-        interval_login = time.time() - start_time_login
         print("\033[92m" + 'Total time login in seconds:', str(interval_login) + "\033[0m")
         self.deletepopup(self.navigateur)
         try:
@@ -272,7 +273,6 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
 
             # wait for load pad
             for a, i in enumerate(range(0,9)):
-                time.sleep(0.3)
                 cel_0 = self.ut.retry(method=By.ID,
                                       element="val_cel_"+str(i),
                                       objects="single_element",
@@ -323,9 +323,8 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
             start_time_login = time.time()
             with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
                 for a, i in listes:
-                    lineexec = executor.submit(check_images,
-                                               'images/Downloads/cel_'+str(i)+'.png',
-                                               'images/Templates/normal/'+str(a)+'.png')
+                    lineexec = executor.submit(calcule_image,
+                                               'cel_'+str(i)+'.png', a)
                     if lineexec.result() is True:
                         # print("cel_"+str(i), " = "+str(a))
                         elem = self.ut.retry(method=By.XPATH,
@@ -334,21 +333,6 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
                         dict_pass[elem.get_attribute("class")] = list()
                         dict_pass[elem.get_attribute("class")].append(a)
                         dict_pass[elem.get_attribute("class")].append(elem.get_attribute("id"))
-
-            if len(dict_pass.keys()) < 9:
-                with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-                    for a, i in listes:
-                        lineexec = executor.submit(check_images,
-                                                   'images/Downloads/cel_'+str(i)+'.png',
-                                                   'images/Templates/1600x900/'+str(a)+'.png')
-                        if lineexec.result() is True:
-                            # print("cel_"+str(i), " = "+str(a))
-                            elem = self.ut.retry(method=By.XPATH,
-                                                 element="//button[@id='"+"val_cel_"+str(i)+"']",
-                                                 objects="single_element", timeout=0.01, retry=3)
-                            dict_pass[elem.get_attribute("class")] = list()
-                            dict_pass[elem.get_attribute("class")].append(a)
-                            dict_pass[elem.get_attribute("class")].append(elem.get_attribute("id"))
             interval_login = time.time() - start_time_login
 
             callback_string = ""
