@@ -240,20 +240,23 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
         url = "https://candidat.pole-emploi.fr/candidat/espacepersonnel/authentification/"
         if os.path.isdir("/home/" + account) is False:
             os.makedirs("/home/" + account)
-        profile = webdriver.FirefoxProfile()
-        options = Options()
-        options.add_argument("--headless")
-        profile.set_preference('browser.download.folderList', 2)
-        profile.set_preference('browser.download.manager.showWhenStarting', False)
-        profile.set_preference("javascript.enabled", 0)
-        profile.set_preference('browser.download.dir', "/home/" + account + "/")
-        profile.set_preference("browser.helperApps.neverAsk.saveToDisk", "application/pdf")
-        profile.set_preference("pdfjs.disabled", True)
-        navigateur = webdriver.Firefox(profile, firefox_options=options)
-
+        dcap = dict(DesiredCapabilities.PHANTOMJS)
+        dcap['phantomjs.page.settings.userAgent'] = (
+              "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:57.0) Gecko/20100101 Firefox/57.0")
+        navigateur = webdriver.PhantomJS(desired_capabilities=dcap, service_args=[
+                                 '--ignore-ssl-errors=true', '--ssl-protocol=any', '--web-security=false', '--disk-cache=yes'])
         navigateur.set_window_size(700, 700)
         navigateur.get(url)
-
+        navigateur.execute_script("""
+        var toRemove = [];
+        toRemove.push.apply(toRemove, document.querySelectorAll('link[type*=\"/css\"]'));
+        toRemove.push.apply(toRemove, document.querySelectorAll('style'));
+        toRemove.forEach(function(s){
+            s.parentNode.removeChild(s);
+        });
+        [].forEach.call(document.querySelectorAll('[style]'), function(e){
+           e.removeAttribute('style');
+        }); """)
         return navigateur
 
     '''
@@ -327,12 +330,11 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
             listes = [(x, y) for x in range(0, 10) for y in range(0, 10)]
 
             print(bcolors.OKBLUE + "Analysing Pad ... please wait" + bcolors.ENDC)
-            time.sleep(2)
             start_time_login = time.time()
             with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
                 for a, i in listes:
                     lineexec = executor.submit(calcule_image,
-                                               'cel_'+str(i)+'.png', a, number_detect)
+                                               'cel_'+str(i)+'.png', a, number_detect_phantomjs)
                     if lineexec.result() is True:
                         # print("cel_"+str(i), " = "+str(a))
                         elem = self.ut.retry(method=By.XPATH,
@@ -341,20 +343,6 @@ Platform: {}{:>9} ({}){}\n'''.format(bcolors.OKBLUE,
                         dict_pass[elem.get_attribute("class")] = list()
                         dict_pass[elem.get_attribute("class")].append(a)
                         dict_pass[elem.get_attribute("class")].append(elem.get_attribute("id"))
-
-            if len(dict_pass.keys()) < 9:
-              with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-                  for a, i in listes:
-                      lineexec = executor.submit(calcule_image,
-                                               'cel_'+str(i)+'.png', a, number_detect_2)
-                      if lineexec.result() is True:
-                          # print("cel_"+str(i), " = "+str(a))
-                          elem = self.ut.retry(method=By.XPATH,
-                                               element="//button[@id='"+"val_cel_"+str(i)+"']",
-                                               objects="single_element", timeout=0.01, retry=3)
-                          dict_pass[elem.get_attribute("class")] = list()
-                          dict_pass[elem.get_attribute("class")].append(a)
-                          dict_pass[elem.get_attribute("class")].append(elem.get_attribute("id"))
 
             interval_login = time.time() - start_time_login
 
