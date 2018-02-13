@@ -35,6 +35,9 @@ Robots PoleEmploi Selenium Python
 # pyvirtualdisplay ( sudo python3 -m pip install pyvirtualdisplay ) 
 # YAML (default package is installed but no install > sudo python3 -m pip install yaml) 
 # PhantomJS 2.1.1 or More
+# Numpy ( sudo python3 -m pip install numpy )
+# OpenCV ( sudo python3 -m pip install opencv )
+# Fedora [Numpy/OpenCV] install: sudo dnf install numpy opencv*
 ```
 
 ## For run
