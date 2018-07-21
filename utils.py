@@ -2,6 +2,7 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, TimeoutException, StaleElementReferenceException, ElementNotInteractableException
 import time
@@ -32,6 +33,11 @@ class Utils():
         raw_html = raw_html.replace('\n', ' ')
         return raw_html
 
+
+    def hover(self, element):
+        hov = ActionChains(self.navigateur).move_to_element(element)
+        hov.perform()
+
     def retry(self, **kwargs):
 
         try:
@@ -58,7 +64,13 @@ class Utils():
             if str(e) == "'message'":
                 kwargs["message"] = ""
 
-        try: 
+        try:
+            kwargs["actions"]
+        except KeyError as e:
+            if str(e) == "'actions'":
+                kwargs["actions"] = ""
+
+        try:
             kwargs["color"]
         except KeyError as e:
             if str(e) == "'color'":
@@ -67,7 +79,7 @@ class Utils():
         if kwargs["objects"] == "single_element":
             try:
                 elements = WebDriverWait(self.navigateur, kwargs["timeout"]).until(EC.presence_of_element_located((kwargs["method"], kwargs["element"])))
-                
+
                 if kwargs["message"] == "return_cleanhtml":
                     print(kwargs["color"] + self.cleanhtmls(elements.get_attribute("innerHTML")) + bcolors.ENDC)
                 elif kwargs["message"] == "return":
@@ -75,12 +87,16 @@ class Utils():
                 else:
                     if kwargs["message"] != "":
                         print(kwargs["color"] + kwargs["message"] + bcolors.ENDC)
+                if kwargs["actions"] == "perform":
+                    self.hover(elements)
 
                 return elements
             except TimeoutException:
                 for i in range(0, kwargs["retry"]):
                     try:
                         elements = WebDriverWait(self.navigateur, kwargs["timeout_fail"]).until(EC.presence_of_element_located((kwargs["method"], kwargs["element"])))
+                        if kwargs["actions"] == "perform":
+                            self.hover(elements)
                         return elements
                         break
                     except TimeoutException:
@@ -96,6 +112,7 @@ class Utils():
                 else:
                     if kwargs["message"] != "":
                         print(kwargs["color"] + kwargs["message"] + bcolors.ENDC)
+
                 valide.click()
                 return True
             except (TimeoutException, ElementNotInteractableException):
@@ -103,10 +120,12 @@ class Utils():
                     try:
                         time.sleep(0.1)
                         valide = WebDriverWait(self.navigateur, kwargs["timeout_fail"]).until(EC.presence_of_element_located((kwargs["method"], kwargs["element"])))
+
                     except (TimeoutException, ElementNotInteractableException):
                         return False
 
                     if valide:
+                        self.hover(valide)
                         valide.click()
                         return True
 
@@ -114,6 +133,7 @@ class Utils():
         if kwargs["objects"] == "force_find_click":
             try:
                 valide = WebDriverWait(self.navigateur, kwargs["timeout"]).until(EC.presence_of_element_located((kwargs["method"], kwargs["element"])))
+                self.hover(valide)
                 valide.click()
                 return True
             except (TimeoutException, ElementNotInteractableException):
@@ -123,6 +143,7 @@ class Utils():
                         valide = WebDriverWait(self.navigateur, kwargs["timeout_fail"]).until(EC.presence_of_element_located((kwargs["method"], kwargs["element_retry"])))
                         if valide:
                             print(bcolors.OKBLUE + "séléction automatique '" + self.cleanhtmls(valide.get_attribute("innerHTML")) +"'" + bcolors.ENDC)
+                            self.hover(valide)
                             valide.click()
                             return True
                 except (TimeoutException, ElementNotInteractableException):
@@ -135,6 +156,7 @@ class Utils():
                 inputs.send_keys(kwargs["send_keys"])
                 #button = self.navigateur.find_element_by_id("boutonContinuer")
                 button = WebDriverWait(self.navigateur, kwargs["timeout"]).until(EC.presence_of_element_located((kwargs["method_input"], kwargs["element_input"])))
+                self.hover(button)
                 button.click()
                 return True
             except (TimeoutException, ElementNotInteractableException):
@@ -146,6 +168,7 @@ class Utils():
                         inputs.send_keys(kwargs["send_keys"])
                         #button = self.navigateur.find_element_by_id("boutonContinuer")
                         button = WebDriverWait(self.navigateur, kwargs["timeout_fail"]).until(EC.presence_of_element_located((kwargs["method_input"], kwargs["element_input"])))
+                        self.hover(button)
                         button.click()
                         print(bcolors.OKBLUE + kwargs["message"] + bcolors.ENDC)
                         return True
