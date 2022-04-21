@@ -166,6 +166,36 @@ def calcule_image(images_input, number_check, listes):
     return False
     #accuracy = correct.sum() / correct.size
 
+def calcule_image_new(images_input, number_check, listes=number_detect):
+    img = cv2.imread('images/{}.png'.format(images_input))
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    scale_percent = 1000 # percent of original size
+    width = int(img.shape[1] * scale_percent / 100)
+    height = int(img.shape[0] * scale_percent / 100)
+    dim = (width, height)
+
+    resized = cv2.resize(gray, dim, interpolation = cv2.INTER_AREA)
+    cv2.imwrite("test.png", resized)
+
+    gray = cv2.bilateralFilter(resized, 11, 17, 17)
+    edged = cv2.Canny(gray, 30, 200)
+
+    contours, hierarchy = cv2.findContours(edged, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+    cv2.drawContours(resized, contours, -1, (0, 255, 0), 3)
+
+    contours = np.vstack(contours).squeeze()
+
+    b = contours.tolist()
+    a = number_detect[str(number_check)]
+
+    try:
+        accuracy = len([a[i] for i in range(0, len(a)) if a[i] == b[i]]) / len(a)
+        if accuracy >= 0.79:
+            return True
+    except:
+        return False
+    return False
 
 #listes = [(x, y) for x in range(0, 10) for y in range(0, 10)]
 #for i, a in listes:
